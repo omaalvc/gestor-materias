@@ -1,0 +1,50 @@
+<div class="container">
+  <div class="header">
+    <h2>Listado de Estudiantes</h2>
+    <button class="btn btn-primary" (click)="nuevoEstudiante()">
+      <i class="fas fa-plus"></i> Nuevo Estudiante
+    </button>
+  </div>
+  
+  <div class="alert alert-danger" *ngIf="errorMessage">{{ errorMessage }}</div>
+  
+  <div class="loading-spinner" *ngIf="loading">
+    <div class="spinner-border" role="status">
+      <span class="sr-only">Cargando...</span>
+    </div>
+  </div>
+  
+  <div class="table-responsive" *ngIf="!loading">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Nombre</th>
+          <th>Email</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngIf="estudiantes.length === 0">
+          <td colspan="4" class="text-center">No hay estudiantes registrados</td>
+        </tr>
+        <tr *ngFor="let estudiante of estudiantes">
+          <td>{{ estudiante.id }}</td>
+          <td>{{ estudiante.nombre }}</td>
+          <td>{{ estudiante.email }}</td>
+          <td>
+            <button class="btn btn-sm btn-info" (click)="verDetalle(estudiante.id!)">
+              <i class="fas fa-eye"></i> Ver
+            </button>
+            <button class="btn btn-sm btn-warning" (click)="editarEstudiante(estudiante.id!)">
+              <i class="fas fa-edit"></i> Editar
+            </button>
+            <button class="btn btn-sm btn-danger" (click)="eliminarEstudiante(estudiante.id!)">
+              <i class="fas fa-trash"></i> Eliminar
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

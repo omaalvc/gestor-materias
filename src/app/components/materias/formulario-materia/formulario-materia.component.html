@@ -1,0 +1,79 @@
+<div class="container">
+  <div class="header">
+    <h2 *ngIf="!modoEdicion">Nueva Materia</h2>
+    <h2 *ngIf="modoEdicion">Editar Materia</h2>
+  </div>
+  
+  <div class="alert alert-danger" *ngIf="errorMessage">{{ errorMessage }}</div>
+  
+  <div class="loading-spinner" *ngIf="loading">
+    <div class="spinner-border" role="status">
+      <span class="sr-only">Cargando...</span>
+    </div>
+  </div>
+  
+  <div class="card">
+    <div class="card-body">
+      <form [formGroup]="materiaForm" (ngSubmit)="onSubmit()">
+        <div class="form-group">
+          <label for="nombre">Nombre</label>
+          <input 
+            type="text" 
+            id="nombre" 
+            formControlName="nombre" 
+            class="form-control" 
+            [ngClass]="{'is-invalid': materiaForm.get('nombre')?.invalid && materiaForm.get('nombre')?.touched}"
+          >
+          <div class="invalid-feedback" *ngIf="materiaForm.get('nombre')?.invalid && materiaForm.get('nombre')?.touched">
+            <span *ngIf="materiaForm.get('nombre')?.errors?.['required']">El nombre es requerido</span>
+            <span *ngIf="materiaForm.get('nombre')?.errors?.['minlength']">El nombre debe tener al menos 3 caracteres</span>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="descripcion">Descripción</label>
+          <textarea
+            id="descripcion" 
+            formControlName="descripcion" 
+            class="form-control" 
+            rows="4"
+            [ngClass]="{'is-invalid': materiaForm.get('descripcion')?.invalid && materiaForm.get('descripcion')?.touched}"
+          ></textarea>
+          <div class="invalid-feedback" *ngIf="materiaForm.get('descripcion')?.invalid && materiaForm.get('descripcion')?.touched">
+            <span *ngIf="materiaForm.get('descripcion')?.errors?.['required']">La descripción es requerida</span>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="creditos">Créditos</label>
+          <input 
+            type="number" 
+            id="creditos" 
+            formControlName="creditos" 
+            class="form-control" 
+            min="1"
+            max="10"
+            [ngClass]="{'is-invalid': materiaForm.get('creditos')?.invalid && materiaForm.get('creditos')?.touched}"
+          >
+          <div class="invalid-feedback" *ngIf="materiaForm.get('creditos')?.invalid && materiaForm.get('creditos')?.touched">
+            <span *ngIf="materiaForm.get('creditos')?.errors?.['required']">Los créditos son requeridos</span>
+            <span *ngIf="materiaForm.get('creditos')?.errors?.['min']">Los créditos deben ser al menos 1</span>
+            <span *ngIf="materiaForm.get('creditos')?.errors?.['max']">Los créditos no pueden exceder 10</span>
+          </div>
+        </div>
+        
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" (click)="cancelar()">Cancelar</button>
+          <button 
+            type="submit" 
+            class="btn btn-primary" 
+            [disabled]="materiaForm.invalid || loading"
+          >
+            <span *ngIf="loading" class="spinner-border spinner-border-sm mr-1"></span>
+            {{ modoEdicion ? 'Actualizar' : 'Guardar' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

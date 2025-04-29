@@ -1,0 +1,116 @@
+<div class="container">
+  <div class="header">
+    <div>
+      <h2>Detalle del Estudiante</h2>
+      <button class="btn btn-secondary" (click)="volver()">
+        <i class="fas fa-arrow-left"></i> Volver
+      </button>
+    </div>
+  </div>
+  
+  <div class="alert alert-danger" *ngIf="errorMessage">{{ errorMessage }}</div>
+  
+  <div class="loading-spinner" *ngIf="loading">
+    <div class="spinner-border" role="status">
+      <span class="sr-only">Cargando...</span>
+    </div>
+  </div>
+  
+  <div *ngIf="estudiante && !loading" class="student-info">
+    <div class="card">
+      <div class="card-header">
+        <h3>Información Personal</h3>
+      </div>
+      <div class="card-body">
+        <div class="info-row">
+          <span class="label">ID:</span>
+          <span class="value">{{ estudiante.id }}</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Nombre:</span>
+          <span class="value">{{ estudiante.nombre }}</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Email:</span>
+          <span class="value">{{ estudiante.email }}</span>
+        </div>
+      </div>
+    </div>
+    
+    <div class="card mt-4">
+      <div class="card-header">
+        <h3>Materias Matriculadas</h3>
+      </div>
+      <div class="card-body">
+        <div *ngIf="materias.length === 0" class="empty-message">
+          Este estudiante no tiene materias matriculadas.
+        </div>
+        
+        <div *ngIf="materias.length > 0" class="table-responsive">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Descripción</th>
+                <th>Créditos</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let materia of materias">
+                <td>{{ materia.id }}</td>
+                <td>{{ materia.nombre }}</td>
+                <td>{{ materia.descripcion }}</td>
+                <td>{{ materia.creditos }}</td>
+                <td>
+                  <button class="btn btn-sm btn-danger" (click)="cancelarMatricula(materia.id!)">
+                    <i class="fas fa-times"></i> Cancelar Matrícula
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    
+    <div class="card mt-4">
+      <div class="card-header">
+        <h3>Materias Disponibles</h3>
+      </div>
+      <div class="card-body">
+        <div *ngIf="materiasDisponibles.length === 0" class="empty-message">
+          No hay materias disponibles para matricular.
+        </div>
+        
+        <div *ngIf="materiasDisponibles.length > 0" class="table-responsive">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Descripción</th>
+                <th>Créditos</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let materia of materiasDisponibles">
+                <td>{{ materia.id }}</td>
+                <td>{{ materia.nombre }}</td>
+                <td>{{ materia.descripcion }}</td>
+                <td>{{ materia.creditos }}</td>
+                <td>
+                  <button class="btn btn-sm btn-success" (click)="matricular(materia.id!)">
+                    <i class="fas fa-plus"></i> Matricular
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

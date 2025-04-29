@@ -1,0 +1,62 @@
+<div class="container">
+  <div class="header">
+    <h2 *ngIf="!modoEdicion">Nuevo Estudiante</h2>
+    <h2 *ngIf="modoEdicion">Editar Estudiante</h2>
+  </div>
+  
+  <div class="alert alert-danger" *ngIf="errorMessage">{{ errorMessage }}</div>
+  
+  <div class="loading-spinner" *ngIf="loading">
+    <div class="spinner-border" role="status">
+      <span class="sr-only">Cargando...</span>
+    </div>
+  </div>
+  
+  <div class="card">
+    <div class="card-body">
+      <form [formGroup]="estudianteForm" (ngSubmit)="onSubmit()">
+        <div class="form-group">
+          <label for="nombre">Nombre</label>
+          <input 
+            type="text" 
+            id="nombre" 
+            formControlName="nombre" 
+            class="form-control" 
+            [ngClass]="{'is-invalid': estudianteForm.get('nombre')?.invalid && estudianteForm.get('nombre')?.touched}"
+          >
+          <div class="invalid-feedback" *ngIf="estudianteForm.get('nombre')?.invalid && estudianteForm.get('nombre')?.touched">
+            <span *ngIf="estudianteForm.get('nombre')?.errors?.['required']">El nombre es requerido</span>
+            <span *ngIf="estudianteForm.get('nombre')?.errors?.['minlength']">El nombre debe tener al menos 3 caracteres</span>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input 
+            type="email" 
+            id="email" 
+            formControlName="email" 
+            class="form-control" 
+            [ngClass]="{'is-invalid': estudianteForm.get('email')?.invalid && estudianteForm.get('email')?.touched}"
+          >
+          <div class="invalid-feedback" *ngIf="estudianteForm.get('email')?.invalid && estudianteForm.get('email')?.touched">
+            <span *ngIf="estudianteForm.get('email')?.errors?.['required']">El email es requerido</span>
+            <span *ngIf="estudianteForm.get('email')?.errors?.['email']">Ingrese un email válido</span>
+          </div>
+        </div>
+        
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" (click)="cancelar()">Cancelar</button>
+          <button 
+            type="submit" 
+            class="btn btn-primary" 
+            [disabled]="estudianteForm.invalid || loading"
+          >
+            <span *ngIf="loading" class="spinner-border spinner-border-sm mr-1"></span>
+            {{ modoEdicion ? 'Actualizar' : 'Guardar' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

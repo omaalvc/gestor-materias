@@ -1,0 +1,161 @@
+.container {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.welcome-section {
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+.welcome-section h1 {
+  color: #3f51b5;
+  font-size: 2rem;
+  margin-bottom: 5px;
+}
+
+.welcome-section p {
+  color: #757575;
+  font-size: 1.1rem;
+}
+
+.loading-spinner {
+  display: flex;
+  justify-content: center;
+  margin: 30px 0;
+}
+
+.dashboard-stats {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 30px;
+}
+
+.stat-card {
+  flex: 1;
+  max-width: 250px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  text-align: center;
+  margin: 0 15px;
+  transition: transform 0.3s;
+}
+
+.stat-card:hover {
+  transform: translateY(-5px);
+}
+
+.stat-number {
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: #3f51b5;
+  margin-bottom: 5px;
+}
+
+.stat-title {
+  font-size: 1.1rem;
+  color: #616161;
+  margin-bottom: 15px;
+}
+
+.stat-action a {
+  color: #3f51b5;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.stat-action a:hover {
+  text-decoration: underline;
+}
+
+.dashboard-content {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 0 -15px;
+}
+
+.content-section {
+  flex: 1;
+  min-width: 300px;
+  margin: 0 15px 30px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  background-color: #f5f5f5;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.section-header h3 {
+  margin: 0;
+  color: #455a64;
+  font-size: 1.2rem;
+}
+
+.view-all {
+  color: #3f51b5;
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.view-all:hover {
+  text-decoration: underline;
+}
+
+.section-body {
+  padding: 15px;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th {
+  background-color: #f5f5f5;
+  font-weight: 600;
+  text-align: left;
+  padding: 10px;
+  border-bottom: 2px solid #ddd;
+}
+
+.table td {
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.text-center {
+  text-align: center;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .dashboard-stats {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .stat-card {
+    max-width: 100%;
+    margin: 0 0 20px;
+  }
+  
+  .dashboard-content {
+    flex-direction: column;
+  }
+  
+  .content-section {
+    margin: 0 0 20px;
+  }
+}
