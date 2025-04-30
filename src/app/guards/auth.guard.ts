@@ -1,38 +1,29 @@
-import { Injectable } from '@angular/core';
-import { Router, CanActivate, ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
+import { inject } from '@angular/core';
+import { Router, CanActivateFn } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 
-@Injectable({
-  providedIn: 'root'
-})
-export class AuthGuard implements CanActivate {
+export const AuthGuard: CanActivateFn = (route, state) => {
+  const router = inject(Router);
+  const authService = inject(AuthService);
   
-  constructor(
-    private router: Router,
-    private authService: AuthService
-  ) { }
+  const currentUser = authService.getCurrentUser();
   
-  canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot) {
-    const currentUser = this.authService.getCurrentUser();
-    
-    if (currentUser) {
-      // Verificar si la ruta requiere roles específicos
-      if (route.data['roles'] && route.data['roles'].length) {
-        // Verificar si el usuario tiene alguno de los roles requeridos
-        const userRole = this.authService.getUserRole();
-        if (route.data['roles'].indexOf(userRole) === -1) {
-          // Si no tiene el rol requerido, redirigir a la página de inicio
-          this.router.navigate(['/']);
-          return false;
-        }
+  if (authService.isLoggedIn()) {
+    // Verificar si la ruta tiene requisitos de roles
+    if (route.data['roles'] && route.data['roles'].length) {
+      // Verificar si el usuario tiene el rol requerido
+      if (!route.data['roles'].includes(currentUser.role)) {
+        // Si el rol no coincide, redirigir a la página principal del usuario
+        router.navigate(['/materias']);
+        return false;
       }
-      
-      // Autorizado, retornar verdadero
-      return true;
     }
     
-    // No está autenticado, redirigir al login
-    this.router.navigate(['/login'], { queryParams: { returnUrl: state.url } });
-    return false;
+    // Autenticado y con permisos
+    return true;
   }
-}
+  
+  // No autenticado, redirigir al login
+  router.navigate(['/login'], { queryParams: { returnUrl: state.url } });
+  return false;
+};

@@ -1,91 +1,66 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, tap, of, throwError, map } from 'rxjs';
+import { BehaviorSubject, Observable, map, tap } from 'rxjs';
+import { Router } from '@angular/router';
 import { environment } from '../../environments/environment';
-import { jwtDecode } from 'jwt-decode';
 
-export interface User {
-  id: number;
-  username: string;
-  email: string;
-  fullName: string;
-  role: string;
-  estudianteId?: number;
-}
-
-export interface AuthResponse {
-  success?: boolean;
+export interface LoginResponse {
+  success: boolean;
   token: string;
-  message?: string;
-  user?: User;
+  user: {
+    username: string;
+    email: string;
+    fullName: string;
+    role: string;
+    id: number;
+  };
 }
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = environment.apiUrl;
-  private currentUserSubject = new BehaviorSubject<User | null>(this.getUserFromStorage());
+  private apiUrl = `${environment.apiUrl}/api/Auth`;
+  private currentUserSubject = new BehaviorSubject<any>(null);
   public currentUser$ = this.currentUserSubject.asObservable();
-  private tokenSubject = new BehaviorSubject<string | null>(localStorage.getItem('token'));
-  public token$ = this.tokenSubject.asObservable();
+  
+  constructor(
+    private http: HttpClient,
+    private router: Router
+  ) { 
+    // Intenta recuperar el usuario del localStorage al inicializar
+    const storedUser = localStorage.getItem('currentUser');
+    if (storedUser) {
+      this.currentUserSubject.next(JSON.parse(storedUser));
+    }
+  }
 
-  constructor(private http: HttpClient) { }
-
-  login(username: string, password: string): Observable<AuthResponse> {
-    return this.http.post<any>(`${this.apiUrl}/api/Auth/login`, { username, password })
+  login(username: string, password: string): Observable<LoginResponse> {
+    return this.http.post<LoginResponse>(`${this.apiUrl}/login`, { username, password })
       .pipe(
         tap(response => {
-          console.log('Respuesta del servidor:', response);
-          
-          // Verificar si la respuesta tiene al menos un token
-          if (response && response.token) {
-            // Guardar el token en el almacenamiento local
+          if (response && response.success && response.token) {
+            // Guarda el token y la información del usuario en localStorage
             localStorage.setItem('token', response.token);
+            localStorage.setItem('currentUser', JSON.stringify(response.user));
             
-            // Decodificar el token para obtener la información del usuario
-            try {
-              const decodedToken: any = jwtDecode(response.token);
-              
-              const user: User = {
-                id: parseInt(decodedToken.UserId),
-                username: decodedToken['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'],
-                email: decodedToken['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'],
-                fullName: decodedToken['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'], // Ajustar si hay un claim específico para el nombre completo
-                role: decodedToken['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'],
-                estudianteId: decodedToken.EstudianteId ? parseInt(decodedToken.EstudianteId) : undefined
-              };
-              
-              // Guardar el usuario en el almacenamiento local
-              localStorage.setItem('user', JSON.stringify(user));
-              
-              // Actualizar los BehaviorSubjects
-              this.tokenSubject.next(response.token);
-              this.currentUserSubject.next(user);
-            } catch (error) {
-              console.error('Error al decodificar el token:', error);
-              throw new Error('Error al procesar las credenciales del usuario');
-            }
-          } else {
-            console.error('Estructura de respuesta inválida:', response);
-            throw new Error('Respuesta del servidor inválida');
+            // Actualiza el BehaviorSubject con el usuario actual
+            this.currentUserSubject.next(response.user);
           }
         })
       );
   }
 
-  register(userData: any): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.apiUrl}/Account/register`, userData);
-  }
-
   logout(): void {
-    // Eliminar token y usuario del almacenamiento local
+    // Elimina el token y el usuario del localStorage
     localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    localStorage.removeItem('currentUser');
     
-    // Actualizar los BehaviorSubjects
-    this.tokenSubject.next(null);
+    // Actualiza el BehaviorSubject
     this.currentUserSubject.next(null);
+    
+    // Redirige al login
+    this.router.navigate(['/login']);
   }
 
   getToken(): string | null {
@@ -96,36 +71,16 @@ export class AuthService {
     return !!this.getToken();
   }
 
-  getCurrentUser(): User | null {
+  getCurrentUser(): any {
     return this.currentUserSubject.value;
   }
 
-  getUserRole(): string | null {
-    const user = this.getCurrentUser();
-    return user ? user.role : null;
+  hasRole(role: string): boolean {
+    const currentUser = this.getCurrentUser();
+    return currentUser && currentUser.role === role;
   }
 
   isAdmin(): boolean {
-    const role = this.getUserRole();
-    return role === 'Administrador' || role === 'Admin';
-  }
-
-  private getUserFromStorage(): User | null {
-    const user = localStorage.getItem('user');
-    return user ? JSON.parse(user) : null;
-  }
-
-  // Método para validar el token actual
-  validateToken(): Observable<boolean> {
-    const token = this.getToken();
-    if (!token) {
-      return of(false);
-    }
-
-    // Asumiendo que tienes un endpoint para validar tokens
-    return this.http.get<{ valid: boolean }>(`${this.apiUrl}/Auth/validate`)
-      .pipe(
-        map(response => response.valid)
-      );
+    return this.hasRole('Administrador');
   }
 }

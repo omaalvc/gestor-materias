@@ -1,81 +1,69 @@
 import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
-import { MateriaService } from '../../../services/materia.service';
-import { AuthService } from '../../../services/auth.service';
-
-interface Materia {
-  id?: number;
-  nombre: string;
-  descripcion: string;
-  creditos: number;
-}
+import { MateriaService, Materia } from '../../../services/materia.service';
 
 @Component({
   selector: 'app-lista-materias',
-  standalone: true,
-  imports: [CommonModule, RouterModule],
   templateUrl: './lista-materias.component.html',
-  styleUrls: ['./lista-materias.component.css']
+  styleUrls: ['./lista-materias.component.css'],
+  standalone: true,
+  imports: [CommonModule, RouterModule]
 })
 export class ListaMateriasComponent implements OnInit {
   materias: Materia[] = [];
-  loading: boolean = false;
-  errorMessage: string = '';
-  isAdmin: boolean = false;
-  
+  loading = false;
+  error: string | null = null;
+
   constructor(
     private materiaService: MateriaService,
-    private authService: AuthService,
     private router: Router
   ) { }
 
   ngOnInit(): void {
     this.cargarMaterias();
-    this.authService.currentUser$.subscribe(user => {
-      this.isAdmin = user?.role === 'Admin';
-    });
   }
 
   cargarMaterias(): void {
     this.loading = true;
-    this.materiaService.getMaterias()
-      .subscribe({
-        next: (data) => {
-          this.materias = data;
-          this.loading = false;
-        },
-        error: (error) => {
-          this.errorMessage = 'Error al cargar materias. ' + (error.error?.message || error.message);
-          this.loading = false;
-        }
-      });
+    this.error = null;
+
+    this.materiaService.getMaterias().subscribe({
+      next: (data) => {
+        this.materias = data;
+        this.loading = false;
+      },
+      error: (err) => {
+        console.error('Error cargando materias:', err);
+        this.error = 'Error al cargar las materias. Por favor intente nuevamente.';
+        this.loading = false;
+      }
+    });
   }
 
   verDetalle(id: number): void {
-    this.router.navigate(['/materias', id]);
-  }
-
-  nuevaMateria(): void {
-    this.router.navigate(['/materias/nueva']);
+    this.router.navigate(['/admin/materias/view', id]);
   }
 
   editarMateria(id: number): void {
-    this.router.navigate(['/materias/editar', id]);
+    this.router.navigate(['/admin/materias/edit', id]);
   }
 
   eliminarMateria(id: number): void {
     if (confirm('¿Está seguro de eliminar esta materia?')) {
-      this.materiaService.deleteMateria(id)
-        .subscribe({
-          next: () => {
-            this.materias = this.materias.filter(m => m.id !== id);
-          },
-          error: (error) => {
-            this.errorMessage = 'Error al eliminar materia. ' + (error.error?.message || error.message);
-          }
-        });
+      this.materiaService.deleteMateria(id).subscribe({
+        next: () => {
+          this.cargarMaterias();
+        },
+        error: (err) => {
+          console.error('Error eliminando materia:', err);
+          this.error = 'Error al eliminar la materia. Por favor intente nuevamente.';
+        }
+      });
     }
+  }
+
+  nuevaMateria(): void {
+    this.router.navigate(['/admin/materias/crear']);
   }
 }

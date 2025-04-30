@@ -1,76 +1,77 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css'],
-  standalone: false
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule]
 })
 export class LoginComponent implements OnInit {
   loginForm: FormGroup;
-  errorMessage: string = '';
-  loading: boolean = false;
+  loading = false;
+  error = '';
+  submitted = false;
 
   constructor(
-    private fb: FormBuilder,
-    private authService: AuthService,
-    private router: Router
+    private formBuilder: FormBuilder,
+    private router: Router,
+    private authService: AuthService
   ) {
-    this.loginForm = this.fb.group({
-      username: ['', [Validators.required]],
-      password: ['', [Validators.required]]
+    // Redirigir si ya está autenticado
+    if (this.authService.isLoggedIn()) {
+      this.router.navigate(['/admin/materias']);
+    }
+
+    this.loginForm = this.formBuilder.group({
+      username: ['', Validators.required],
+      password: ['', Validators.required]
     });
   }
 
   ngOnInit(): void {
-    // Si ya está autenticado, redirigir a la página principal
-    if (this.authService.isLoggedIn()) {
-      this.router.navigate(['/dashboard']);
-    }
   }
 
+  // Getter para acceder fácilmente a los campos del formulario
+  get f() { return this.loginForm.controls; }
+
   onSubmit(): void {
+    this.submitted = true;
+    
+    // Detener si el formulario es inválido
     if (this.loginForm.invalid) {
       return;
     }
 
     this.loading = true;
-    this.errorMessage = '';
+    this.error = '';
 
-    const { username, password } = this.loginForm.value;
-
-    this.authService.login(username, password).subscribe({
-      next: (response) => {
-        console.log('Login exitoso:', response);
-        this.loading = false;
-        
-        // Verificar el rol del usuario para la redirección
-        const userRole = this.authService.getUserRole();
-        if (userRole === 'Administrador' || userRole === 'Admin') {
-          this.router.navigate(['/admin/dashboard']);
-        } else {
-          this.router.navigate(['/student/dashboard']);
+    this.authService.login(this.f['username'].value, this.f['password'].value)
+      .subscribe({
+        next: (response) => {
+          console.log('Login exitoso:', response);
+          
+          if (response.success) {
+            // Redirigir basado en el rol del usuario
+            if (this.authService.isAdmin()) {
+              this.router.navigate(['/admin/materias']);
+            } else {
+              this.router.navigate(['/materias']);
+            }
+          } else {
+            this.error = 'Credenciales inválidas';
+            this.loading = false;
+          }
+        },
+        error: (error) => {
+          console.error('Error en login:', error);
+          this.error = error?.error?.message || 'Error al iniciar sesión. Intente nuevamente.';
+          this.loading = false;
         }
-      },
-      error: (error) => {
-        console.error('Error durante el login:', error);
-        this.loading = false;
-        
-        // Intentar extraer mensaje de error de diferentes formas según la estructura del error
-        if (error.error && typeof error.error === 'object') {
-          // Si el error viene como objeto JSON en la respuesta
-          this.errorMessage = error.error.message || 'Error en inicio de sesión';
-        } else if (error.message) {
-          // Si el error tiene un mensaje directo
-          this.errorMessage = error.message;
-        } else {
-          // Mensaje genérico
-          this.errorMessage = 'Error en inicio de sesión. Por favor, verifica tus credenciales.';
-        }
-      }
-    });
+      });
   }
 }

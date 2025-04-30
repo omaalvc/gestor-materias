@@ -1,47 +1,35 @@
-import { Injectable } from '@angular/core';
-import {
-  HttpRequest,
-  HttpHandler,
-  HttpEvent,
-  HttpInterceptor,
-  HttpErrorResponse
-} from '@angular/common/http';
-import { Observable, throwError } from 'rxjs';
+import { HttpRequest, HttpInterceptorFn } from '@angular/common/http';
+import { inject } from '@angular/core';
 import { catchError } from 'rxjs/operators';
+import { throwError } from 'rxjs';
 import { Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 
-@Injectable()
-export class AuthInterceptor implements HttpInterceptor {
-
-  constructor(
-    private authService: AuthService,
-    private router: Router
-  ) {}
-
-  intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-    // Obtener el token
-    const token = this.authService.getToken();
-    
-    // Si hay un token, agregarlo al encabezado de la solicitud
-    if (token) {
-      request = request.clone({
-        setHeaders: {
-          Authorization: `Bearer ${token}`
-        }
-      });
-    }
-    
-    // Continuar con la solicitud y capturar errores
-    return next.handle(request).pipe(
-      catchError((error: HttpErrorResponse) => {
-        // Si recibimos un código 401 (No autorizado), limpiar el token y redirigir al login
-        if (error.status === 401) {
-          this.authService.logout();
-          this.router.navigate(['/login']);
-        }
-        return throwError(() => error);
-      })
-    );
+export const authInterceptor: HttpInterceptorFn = (req, next) => {
+  const authService = inject(AuthService);
+  const router = inject(Router);
+  
+  // Obtener el token del servicio de autenticación
+  const token = authService.getToken();
+  
+  // Si hay un token, agregarlo a los headers
+  if (token) {
+    req = req.clone({
+      setHeaders: {
+        Authorization: `Bearer ${token}`
+      }
+    });
   }
-}
+  
+  // Continuar con la petición y manejar errores
+  return next(req).pipe(
+    catchError(error => {
+      // Si recibimos un 401 (Unauthorized) o 403 (Forbidden), cerrar sesión
+      if (error.status === 401 || error.status === 403) {
+        authService.logout();
+        router.navigate(['/login']);
+      }
+      return throwError(() => error);
+    })
+  );
+};

@@ -1,14 +1,14 @@
-import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
-import { AppModule } from './app/app.module';
+import { bootstrapApplication } from '@angular/platform-browser';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
+import { provideRouter } from '@angular/router';
+import { AppComponent } from './app/app.component';
+import { routes } from './app/app-routing.module';
+import { authInterceptor } from './app/interceptors/auth.interceptor';
 
-console.log('Iniciando aplicación Angular');
-
-platformBrowserDynamic().bootstrapModule(AppModule)
-  .then(ref => {
-    console.log('Aplicación Angular cargada correctamente');
-    // Uncomment below line for debugging
-    // (window as any).ngRef = ref;
-  })
-  .catch(err => {
-    console.error('Error al iniciar la aplicación Angular:', err);
-  });
+// Usando bootstrapApplication para componentes standalone
+bootstrapApplication(AppComponent, {
+  providers: [
+    provideRouter(routes),
+    provideHttpClient(withInterceptors([authInterceptor])),
+  ]
+}).catch(err => console.error(err));

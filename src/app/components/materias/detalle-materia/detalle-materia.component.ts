@@ -1,35 +1,21 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { MateriaService } from '../../../services/materia.service';
-
-interface Materia {
-  id?: number;
-  nombre: string;
-  descripcion: string;
-  creditos: number;
-}
-
-interface Estudiante {
-  id?: number;
-  nombre: string;
-  email: string;
-}
+import { MateriaService, Materia } from '../../../services/materia.service';
 
 @Component({
   selector: 'app-detalle-materia',
-  standalone: true,
-  imports: [CommonModule, RouterModule],
   templateUrl: './detalle-materia.component.html',
-  styleUrls: ['./detalle-materia.component.css']
+  styleUrls: ['./detalle-materia.component.css'],
+  standalone: true,
+  imports: [CommonModule, RouterModule]
 })
 export class DetalleMateriaComponent implements OnInit {
   materiaId: number = 0;
   materia: Materia | null = null;
-  estudiantes: Estudiante[] = [];
-  loading: boolean = false;
-  errorMessage: string = '';
-  
+  loading: boolean = true;
+  error: string | null = null;
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -39,8 +25,9 @@ export class DetalleMateriaComponent implements OnInit {
   ngOnInit(): void {
     this.route.params.subscribe(params => {
       this.materiaId = +params['id'];
-      this.cargarMateria();
-      this.cargarEstudiantes();
+      if (this.materiaId) {
+        this.cargarMateria();
+      }
     });
   }
 
@@ -49,29 +36,19 @@ export class DetalleMateriaComponent implements OnInit {
     this.materiaService.getMateria(this.materiaId)
       .subscribe({
         next: (data) => {
+          console.log('Materia cargada:', data);
           this.materia = data;
           this.loading = false;
         },
         error: (error) => {
-          this.errorMessage = 'Error al cargar la materia. ' + (error.error?.message || error.message);
+          console.error('Error al cargar materia:', error);
+          this.error = 'Error al cargar la información de la materia. Por favor intente nuevamente.';
           this.loading = false;
-        }
-      });
-  }
-
-  cargarEstudiantes(): void {
-    this.materiaService.getEstudiantesMateria(this.materiaId)
-      .subscribe({
-        next: (data) => {
-          this.estudiantes = data;
-        },
-        error: (error) => {
-          this.errorMessage = 'Error al cargar estudiantes. ' + (error.error?.message || error.message);
         }
       });
   }
 
   volver(): void {
-    this.router.navigate(['/materias']);
+    this.router.navigate(['/admin/materias']);
   }
 }

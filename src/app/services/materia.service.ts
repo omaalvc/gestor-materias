@@ -1,7 +1,9 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Observable, throwError } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
+import { AuthService } from './auth.service';
 
 export interface Materia {
   id: number;
@@ -23,30 +25,90 @@ export interface Materia {
 })
 export class MateriaService {
   private apiUrl = `${environment.apiUrl}/Materias`;
+  
+  constructor(
+    private http: HttpClient,
+    private authService: AuthService
+  ) { }
 
-  constructor(private http: HttpClient) { }
+  // Método privado para obtener los headers con el token
+  private getHeaders(): HttpHeaders {
+    const token = this.authService.getToken();
+    return new HttpHeaders({
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    });
+  }
 
   getMaterias(): Observable<Materia[]> {
-    return this.http.get<Materia[]>(this.apiUrl);
+    return this.http.get<Materia[]>(this.apiUrl)
+      .pipe(
+        catchError(error => {
+          console.error('Error obteniendo materias:', error);
+          return throwError(() => new Error('Error al obtener la lista de materias.'));
+        })
+      );
   }
 
   getMateria(id: number): Observable<Materia> {
-    return this.http.get<Materia>(`${this.apiUrl}/${id}`);
+    return this.http.get<Materia>(`${this.apiUrl}/${id}`)
+      .pipe(
+        catchError(error => {
+          console.error('Error obteniendo detalle de materia:', error);
+          return throwError(() => new Error('Error al obtener el detalle de la materia.'));
+        })
+      );
   }
 
-  createMateria(materia: Materia): Observable<any> {
-    return this.http.post<any>(this.apiUrl, materia);
+  createMateria(materia: Materia): Observable<Materia> {
+    return this.http.post<Materia>(this.apiUrl, materia)
+      .pipe(
+        catchError(error => {
+          console.error('Error al crear materia:', error);
+          return throwError(() => new Error('Error al crear la materia.'));
+        })
+      );
   }
 
   updateMateria(materia: Materia): Observable<any> {
-    return this.http.put<any>(`${this.apiUrl}/${materia.id}`, materia);
+    return this.http.put(`${this.apiUrl}/${materia.id}`, materia)
+      .pipe(
+        catchError(error => {
+          console.error('Error al actualizar materia:', error);
+          return throwError(() => new Error('Error al actualizar la materia.'));
+        })
+      );
   }
 
   deleteMateria(id: number): Observable<any> {
-    return this.http.delete<any>(`${this.apiUrl}/${id}`);
+    return this.http.delete(`${this.apiUrl}/${id}`)
+      .pipe(
+        catchError(error => {
+          console.error('Error al eliminar materia:', error);
+          return throwError(() => new Error('Error al eliminar la materia.'));
+        })
+      );
   }
 
-  getEstudiantesMateria(id: number): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/${id}/estudiantes`);
+  // Matricular estudiante en materia
+  matricularEstudiante(materiaId: number, estudianteId: number): Observable<any> {
+    return this.http.post(`${this.apiUrl}/${materiaId}/estudiantes/${estudianteId}`, {})
+      .pipe(
+        catchError(error => {
+          console.error('Error al matricular estudiante:', error);
+          return throwError(() => new Error('Error al matricular estudiante en la materia.'));
+        })
+      );
+  }
+
+  // Remover estudiante de materia
+  removerEstudiante(materiaId: number, estudianteId: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/${materiaId}/estudiantes/${estudianteId}`)
+      .pipe(
+        catchError(error => {
+          console.error('Error al remover estudiante:', error);
+          return throwError(() => new Error('Error al remover estudiante de la materia.'));
+        })
+      );
   }
 }
