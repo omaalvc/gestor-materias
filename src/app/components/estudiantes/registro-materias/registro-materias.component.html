@@ -1,0 +1,75 @@
+<div class="container mt-4">
+  <h1 class="mb-4">Registro de Materias</h1>
+
+  <!-- Mensajes de alerta -->
+  <div *ngIf="mensajeExito" class="alert alert-success alert-dismissible fade show" role="alert">
+    {{ mensajeExito }}
+    <button type="button" class="btn-close" (click)="limpiarMensajes()" aria-label="Cerrar"></button>
+  </div>
+
+  <div *ngIf="mensajeError" class="alert alert-danger alert-dismissible fade show" role="alert">
+    {{ mensajeError }}
+    <button type="button" class="btn-close" (click)="limpiarMensajes()" aria-label="Cerrar"></button>
+  </div>
+
+  <div *ngIf="loading" class="text-center my-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Cargando...</span>
+    </div>
+    <p class="mt-2">Cargando información...</p>
+  </div>
+  
+  <div *ngIf="!loading" class="row">
+    <!-- Materias Disponibles -->
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-header bg-primary text-white">
+          <h4 class="mb-0">Materias Disponibles</h4>
+        </div>
+        <div class="card-body">
+          <div *ngIf="materiasDisponibles.length === 0" class="alert alert-info">
+            No hay materias disponibles para inscribir.
+          </div>
+          <ul class="list-group" *ngIf="materiasDisponibles.length > 0">
+            <li class="list-group-item d-flex justify-content-between align-items-center" *ngFor="let materia of materiasDisponibles">
+              <div>
+                <h5 class="mb-1">{{ materia.nombre }}</h5>
+                <p class="mb-1"><strong>Profesor:</strong> {{ materia.profesor?.nombres || 'No asignado' }}</p>
+                <p class="mb-1"><small>{{ materia.descripcion }}</small></p>
+              </div>
+              <button class="btn btn-success btn-sm" (click)="registrarMateria(materia)" [disabled]="loading">
+                <i class="fas fa-plus-circle me-1"></i> Inscribir
+              </button>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Materias Registradas -->
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-header bg-success text-white">
+          <h4 class="mb-0">Materias Inscritas</h4>
+        </div>
+        <div class="card-body">
+          <div *ngIf="materiasRegistradas.length === 0" class="alert alert-info">
+            No tienes materias inscritas.
+          </div>
+          <ul class="list-group" *ngIf="materiasRegistradas.length > 0">
+            <li class="list-group-item d-flex justify-content-between align-items-center" *ngFor="let materia of materiasRegistradas">
+              <div>
+                <h5 class="mb-1">{{ materia.nombre }}</h5>
+                <p class="mb-1"><strong>Profesor:</strong> {{ materia.profesor?.nombres || 'No asignado' }}</p>
+                <p class="mb-1"><small>{{ materia.descripcion }}</small></p>
+              </div>
+              <button class="btn btn-danger btn-sm" (click)="retirarMateria(materia)" [disabled]="loading">
+                <i class="fas fa-trash-alt me-1"></i> Retirar
+              </button>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

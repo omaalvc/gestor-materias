@@ -1,42 +1,24 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, map, tap } from 'rxjs';
-import { Router } from '@angular/router';
+import { BehaviorSubject, Observable, of } from 'rxjs';
+import { tap, catchError, map } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
-
-export interface LoginResponse {
-  success: boolean;
-  token: string;
-  user: {
-    username: string;
-    email: string;
-    fullName: string;
-    role: string;
-    id: number;
-  };
-}
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = `${environment.apiUrl}/api/Auth`;
-  private currentUserSubject = new BehaviorSubject<any>(null);
-  public currentUser$ = this.currentUserSubject.asObservable();
+  private apiUrl = `${environment.apiUrl}/api/auth`;
+  private currentUserSubject: BehaviorSubject<any>;
+  public currentUser$: Observable<any>;
   
-  constructor(
-    private http: HttpClient,
-    private router: Router
-  ) { 
-    // Intenta recuperar el usuario del localStorage al inicializar
-    const storedUser = localStorage.getItem('currentUser');
-    if (storedUser) {
-      this.currentUserSubject.next(JSON.parse(storedUser));
-    }
+  constructor(private http: HttpClient) {
+    this.currentUserSubject = new BehaviorSubject<any>(this.getStoredUser());
+    this.currentUser$ = this.currentUserSubject.asObservable();
   }
 
-  login(username: string, password: string): Observable<LoginResponse> {
-    return this.http.post<LoginResponse>(`${this.apiUrl}/login`, { username, password })
+  login(username: string, password: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/login`, { username, password })
       .pipe(
         tap(response => {
           if (response && response.success && response.token) {
@@ -47,40 +29,42 @@ export class AuthService {
             // Actualiza el BehaviorSubject con el usuario actual
             this.currentUserSubject.next(response.user);
           }
+        }),
+        catchError(error => {
+          console.error('Error en el login', error);
+          return of(null);
         })
       );
   }
 
   logout(): void {
-    // Elimina el token y el usuario del localStorage
+    // Eliminar token y usuario del localStorage
     localStorage.removeItem('token');
     localStorage.removeItem('currentUser');
     
-    // Actualiza el BehaviorSubject
+    // Actualizar el BehaviorSubject con null
     this.currentUserSubject.next(null);
-    
-    // Redirige al login
-    this.router.navigate(['/login']);
   }
 
   getToken(): string | null {
     return localStorage.getItem('token');
   }
 
-  isLoggedIn(): boolean {
-    return !!this.getToken();
+  private getStoredUser(): any {
+    const storedUser = localStorage.getItem('currentUser');
+    return storedUser ? JSON.parse(storedUser) : null;
   }
 
   getCurrentUser(): any {
     return this.currentUserSubject.value;
   }
 
-  hasRole(role: string): boolean {
-    const currentUser = this.getCurrentUser();
-    return currentUser && currentUser.role === role;
+  isAdmin(): boolean {
+    const user = this.getCurrentUser();
+    return user && user.role === 'Administrador';
   }
 
-  isAdmin(): boolean {
-    return this.hasRole('Administrador');
+  isLoggedIn(): boolean {
+    return !!this.getCurrentUser() && !!this.getToken();
   }
 }

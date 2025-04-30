@@ -28,6 +28,10 @@
           <li class="nav-item">
             <a class="nav-link" routerLink="/materias" routerLinkActive="active">Mis Materias</a>
           </li>
+          <!-- Opción para registro de materias (solo estudiantes) -->
+          <li class="nav-item" *ngIf="isEstudiante()">
+            <a class="nav-link" routerLink="/registro-materias" routerLinkActive="active">Registro de Materias</a>
+          </li>
         </ng-container>
       </ul>
 

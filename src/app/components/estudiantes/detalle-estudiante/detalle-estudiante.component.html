@@ -1,115 +1,121 @@
-<div class="container">
-  <div class="header">
-    <div>
-      <h2>Detalle del Estudiante</h2>
-      <button class="btn btn-secondary" (click)="volver()">
-        <i class="fas fa-arrow-left"></i> Volver
-      </button>
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h1>Detalle de Estudiante</h1>
+    <button class="btn btn-primary" routerLink="/estudiantes">Volver</button>
+  </div>
+
+  <!-- Spinner de carga -->
+  <div *ngIf="loading" class="text-center my-5">
+    <div class="spinner-border text-primary" role="status"></div>
+    <p class="mt-2">Cargando información...</p>
+  </div>
+  
+  <!-- Mensaje de error -->
+  <div class="alert alert-danger" *ngIf="errorMsg">{{ errorMsg }}</div>
+  
+  <!-- Datos del estudiante -->
+  <div *ngIf="estudiante && !loading" class="card mb-4">
+    <div class="card-header bg-primary text-white">
+      <h2 class="h4 mb-0">Información del Estudiante</h2>
+    </div>
+    <div class="card-body">
+      <div class="row">
+        <div class="col-md-6">
+          <p><strong>Nombre:</strong> {{ estudiante.nombre }} {{ estudiante.apellidos }}</p>
+          <p><strong>Email:</strong> {{ estudiante.email }}</p>
+        </div>
+        <div class="col-md-6">
+          <p><strong>Documento:</strong> {{ estudiante.tipoDocumento }} {{ estudiante.numeroDocumento }}</p>
+          <p><strong>Teléfono:</strong> {{ estudiante.telefono || 'No registrado' }}</p>
+        </div>
+      </div>
+      <div class="row mt-2">
+        <div class="col-12">
+          <p><strong>Dirección:</strong> {{ estudiante.direccion || 'No registrada' }}</p>
+          <p><strong>Fecha de Nacimiento:</strong> {{ estudiante.fechaNacimiento | date:'dd/MM/yyyy' }}</p>
+        </div>
+      </div>
     </div>
   </div>
   
-  <div class="alert alert-danger" *ngIf="errorMessage">{{ errorMessage }}</div>
-  
-  <div class="loading-spinner" *ngIf="loading">
-    <div class="spinner-border" role="status">
-      <span class="sr-only">Cargando...</span>
+  <!-- Materias del estudiante -->
+  <div *ngIf="estudiante && !loading" class="card">
+    <div class="card-header bg-success text-white">
+      <h2 class="h4 mb-0">Materias Matriculadas</h2>
+    </div>
+    <div class="card-body">
+      <!-- Si no hay materias -->
+      <div *ngIf="estudiante.materias?.length === 0" class="empty-message">
+        <p class="text-muted text-center">Este estudiante no tiene materias matriculadas.</p>
+      </div>
+      
+      <!-- Tabla de materias -->
+      <div *ngIf="(estudiante.materias ?? []).length > 0" class="table-responsive">
+        <table class="table table-striped table-hover">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Descripción</th>
+              <th>Créditos</th>
+              <th>Profesor</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let materia of estudiante.materias">
+              <td>{{ materia.nombre }}</td>
+              <td>{{ materia.descripcion }}</td>
+              <td>{{ materia.creditos }}</td>
+              <td>{{ materia.profesor?.nombres || 'No asignado' }}</td>
+              <td>
+                <button class="btn btn-sm btn-danger" (click)="retirarMateria(materia.id!)">
+                  <i class="fas fa-trash-alt"></i> Retirar
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
   
-  <div *ngIf="estudiante && !loading" class="student-info">
-    <div class="card">
-      <div class="card-header">
-        <h3>Información Personal</h3>
-      </div>
-      <div class="card-body">
-        <div class="info-row">
-          <span class="label">ID:</span>
-          <span class="value">{{ estudiante.id }}</span>
-        </div>
-        <div class="info-row">
-          <span class="label">Nombre:</span>
-          <span class="value">{{ estudiante.nombre }}</span>
-        </div>
-        <div class="info-row">
-          <span class="label">Email:</span>
-          <span class="value">{{ estudiante.email }}</span>
-        </div>
-      </div>
+  <!-- Sección para matricular materias -->
+  <div *ngIf="estudiante && !loading" class="card mt-4">
+    <div class="card-header bg-info text-white">
+      <h2 class="h4 mb-0">Matricular Nuevas Materias</h2>
     </div>
-    
-    <div class="card mt-4">
-      <div class="card-header">
-        <h3>Materias Matriculadas</h3>
+    <div class="card-body">
+      <!-- Si no hay materias disponibles -->
+      <div *ngIf="materiasDisponibles.length === 0" class="empty-message">
+        <p class="text-muted text-center">No hay materias disponibles para matricular.</p>
       </div>
-      <div class="card-body">
-        <div *ngIf="materias.length === 0" class="empty-message">
-          Este estudiante no tiene materias matriculadas.
-        </div>
-        
-        <div *ngIf="materias.length > 0" class="table-responsive">
-          <table class="table">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Nombre</th>
-                <th>Descripción</th>
-                <th>Créditos</th>
-                <th>Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let materia of materias">
-                <td>{{ materia.id }}</td>
-                <td>{{ materia.nombre }}</td>
-                <td>{{ materia.descripcion }}</td>
-                <td>{{ materia.creditos }}</td>
-                <td>
-                  <button class="btn btn-sm btn-danger" (click)="cancelarMatricula(materia.id!)">
-                    <i class="fas fa-times"></i> Cancelar Matrícula
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-    
-    <div class="card mt-4">
-      <div class="card-header">
-        <h3>Materias Disponibles</h3>
-      </div>
-      <div class="card-body">
-        <div *ngIf="materiasDisponibles.length === 0" class="empty-message">
-          No hay materias disponibles para matricular.
-        </div>
-        
-        <div *ngIf="materiasDisponibles.length > 0" class="table-responsive">
-          <table class="table">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Nombre</th>
-                <th>Descripción</th>
-                <th>Créditos</th>
-                <th>Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let materia of materiasDisponibles">
-                <td>{{ materia.id }}</td>
-                <td>{{ materia.nombre }}</td>
-                <td>{{ materia.descripcion }}</td>
-                <td>{{ materia.creditos }}</td>
-                <td>
-                  <button class="btn btn-sm btn-success" (click)="matricular(materia.id!)">
-                    <i class="fas fa-plus"></i> Matricular
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+      
+      <!-- Tabla de materias disponibles -->
+      <div *ngIf="materiasDisponibles.length > 0" class="table-responsive">
+        <table class="table table-striped table-hover">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Descripción</th>
+              <th>Créditos</th>
+              <th>Profesor</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let materia of materiasDisponibles">
+              <td>{{ materia.nombre }}</td>
+              <td>{{ materia.descripcion }}</td>
+              <td>{{ materia.creditos }}</td>
+              <td>{{ materia.profesor?.nombres || 'No asignado' }}</td>
+              <td>
+                <button class="btn btn-sm btn-success" (click)="matricularMateria(materia.id!)">
+                  <i class="fas fa-plus-circle"></i> Matricular
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
   </div>

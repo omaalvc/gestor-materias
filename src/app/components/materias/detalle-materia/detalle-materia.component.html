@@ -1,103 +1,54 @@
 <div class="container mt-4">
   <div class="card">
-    <div class="card-header bg-primary text-white">
-      <div class="d-flex justify-content-between align-items-center">
-        <h2 class="m-0">Detalle de Materia</h2>
-        <button class="btn btn-light" (click)="volver()">
-          <i class="fas fa-arrow-left"></i> Volver
-        </button>
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <h2>Detalle de Materia</h2>
+      <button class="btn btn-secondary" (click)="volver()">
+        <i class="fas fa-arrow-left me-2"></i>Volver
+      </button>
+    </div>
+
+    <div *ngIf="loading" class="card-body text-center">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Cargando...</span>
+      </div>
+      <p class="mt-2">Cargando información de la materia...</p>
+    </div>
+
+    <div *ngIf="error" class="card-body">
+      <div class="alert alert-danger" role="alert">
+        {{ error }}
       </div>
     </div>
 
-    <div class="card-body">
-      <!-- Mensaje de carga -->
-      <div *ngIf="loading" class="text-center my-5">
-        <div class="spinner-border text-primary" role="status">
-          <span class="visually-hidden">Cargando...</span>
-        </div>
-        <p class="mt-2">Cargando información...</p>
+    <div *ngIf="!loading && !error && materia" class="card-body">
+      <div class="row mb-3">
+        <div class="col-md-3 fw-bold">Nombre:</div>
+        <div class="col-md-9">{{ materia.nombre }}</div>
+      </div>
+      
+      <div class="row mb-3">
+        <div class="col-md-3 fw-bold">Descripción:</div>
+        <div class="col-md-9">{{ materia.descripcion }}</div>
+      </div>
+      
+      <div class="row mb-3">
+        <div class="col-md-3 fw-bold">Créditos:</div>
+        <div class="col-md-9">{{ materia.creditos }}</div>
+      </div>
+      
+      <div class="row mb-3">
+        <div class="col-md-3 fw-bold">Profesor:</div>
+        <div class="col-md-9">{{ materia.profesor?.nombre || 'Sin profesor asignado' }}</div>
       </div>
 
-      <!-- Mensaje de error -->
-      <div *ngIf="error" class="alert alert-danger">
-        {{ error }}
-      </div>
-
-      <!-- Información de la materia -->
-      <div *ngIf="materia && !loading">
-        <div class="row mb-4">
-          <div class="col-md-12">
-            <h3 class="border-bottom pb-2">{{ materia.nombre }}</h3>
-            <p class="lead">{{ materia.descripcion }}</p>
-          </div>
-        </div>
-
-        <div class="row mb-4">
-          <div class="col-md-6">
-            <div class="card h-100">
-              <div class="card-header bg-light">
-                <h4 class="m-0">Información General</h4>
-              </div>
-              <div class="card-body">
-                <div class="mb-3">
-                  <strong>ID:</strong> {{ materia.id }}
-                </div>
-                <div class="mb-3">
-                  <strong>Créditos:</strong> {{ materia.creditos }}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="col-md-6">
-            <div class="card h-100">
-              <div class="card-header bg-light">
-                <h4 class="m-0">Profesor</h4>
-              </div>
-              <div class="card-body">
-                <div *ngIf="materia.profesor">
-                  <p><strong>ID:</strong> {{ materia.profesor.id }}</p>
-                  <p class="mb-0"><strong>Nombre:</strong> {{ materia.profesor.nombre }}</p>
-                </div>
-                <div *ngIf="!materia.profesor" class="text-muted">
-                  No hay profesor asignado a esta materia
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="row">
-          <div class="col-md-12">
-            <div class="card">
-              <div class="card-header bg-light">
-                <h4 class="m-0">Estudiantes Inscritos</h4>
-              </div>
-              <div class="card-body">
-                <div *ngIf="materia.estudiantes && materia.estudiantes.length > 0">
-                  <div class="table-responsive">
-                    <table class="table table-striped table-hover">
-                      <thead>
-                        <tr>
-                          <th>ID</th>
-                          <th>Nombre</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr *ngFor="let estudiante of materia.estudiantes">
-                          <td>{{ estudiante.id }}</td>
-                          <td>{{ estudiante.nombre }}</td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-                <div *ngIf="!materia.estudiantes || materia.estudiantes.length === 0" class="text-muted">
-                  No hay estudiantes inscritos en esta materia
-                </div>
-              </div>
-            </div>
-          </div>
+      <div class="row" *ngIf="materia.estudiantes && materia.estudiantes.length > 0">
+        <div class="col-12">
+          <h4 class="mb-3">Estudiantes Matriculados</h4>
+          <ul class="list-group">
+            <li class="list-group-item" *ngFor="let estudiante of materia.estudiantes">
+              {{ estudiante.nombre }}
+            </li>
+          </ul>
         </div>
       </div>
     </div>

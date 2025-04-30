@@ -1,12 +1,12 @@
-<div class="container">
-  <div class="header">
-    <h2>Listado de Estudiantes</h2>
-    <button class="btn btn-primary" (click)="nuevoEstudiante()">
-      <i class="fas fa-plus"></i> Nuevo Estudiante
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h1>Estudiantes</h1>
+    <button class="btn btn-primary" routerLink="/estudiantes/nuevo">
+      <i class="fas fa-plus-circle me-2"></i>Nuevo Estudiante
     </button>
   </div>
-  
-  <div class="alert alert-danger" *ngIf="errorMessage">{{ errorMessage }}</div>
+
+  <div class="alert alert-danger" *ngIf="errorMsg">{{ errorMsg }}</div>
   
   <div class="loading-spinner" *ngIf="loading">
     <div class="spinner-border" role="status">

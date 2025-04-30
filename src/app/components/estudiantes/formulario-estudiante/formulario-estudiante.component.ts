@@ -1,115 +1,86 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { EstudianteService } from '../../../services/estudiante.service';
-
-interface Estudiante {
-  id?: number;
-  nombre: string;
-  email: string;
-}
 
 @Component({
   selector: 'app-formulario-estudiante',
   standalone: true,
-  imports: [ReactiveFormsModule, CommonModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule],
   templateUrl: './formulario-estudiante.component.html',
   styleUrls: ['./formulario-estudiante.component.css']
 })
 export class FormularioEstudianteComponent implements OnInit {
   estudianteForm: FormGroup;
-  estudianteId: number | null = null;
-  modoEdicion: boolean = false;
-  loading: boolean = false;
-  errorMessage: string = '';
-  
+  modoEdicion = false;
+  loading = false;
+  errorMessage = '';
+  estudianteId: string = '';
+
   constructor(
     private fb: FormBuilder,
     private estudianteService: EstudianteService,
-    private route: ActivatedRoute,
-    private router: Router
-  ) { 
+    private router: Router,
+    private route: ActivatedRoute
+  ) {
     this.estudianteForm = this.fb.group({
       nombre: ['', [Validators.required, Validators.minLength(3)]],
-      email: ['', [Validators.required, Validators.email]]
+      apellidos: ['', [Validators.required, Validators.minLength(3)]],
+      email: ['', [Validators.required, Validators.email]],
+      tipoDocumento: ['', Validators.required],
+      numeroDocumento: ['', Validators.required],
+      telefono: [''],
+      direccion: ['']
     });
   }
 
   ngOnInit(): void {
     this.route.params.subscribe(params => {
       if (params['id']) {
-        this.estudianteId = +params['id'];
         this.modoEdicion = true;
+        this.estudianteId = params['id'];
         this.cargarEstudiante();
       }
     });
   }
-  
+
   cargarEstudiante(): void {
-    if (this.estudianteId) {
-      this.loading = true;
-      this.estudianteService.getEstudiante(this.estudianteId)
-        .subscribe({
-          next: (data) => {
-            this.estudianteForm.patchValue({
-              nombre: data.estudiante.nombre,
-              email: data.estudiante.email
-            });
-            this.loading = false;
-          },
-          error: (error) => {
-            this.errorMessage = 'Error al cargar el estudiante. ' + (error.error?.message || error.message);
-            this.loading = false;
-          }
-        });
-    }
-  }
-  
-  onSubmit(): void {
-    if (this.estudianteForm.invalid) {
-      return;
-    }
-    
-    const estudiante: Estudiante = {
-      nombre: this.estudianteForm.value.nombre,
-      email: this.estudianteForm.value.email
-    };
-    
     this.loading = true;
-    
-    if (this.modoEdicion && this.estudianteId) {
-      // Actualizar estudiante existente
-      this.estudianteService.updateEstudiante(this.estudianteId, estudiante)
-        .subscribe({
-          next: () => {
-            this.router.navigate(['/estudiantes', this.estudianteId]);
-          },
-          error: (error) => {
-            this.errorMessage = 'Error al actualizar el estudiante. ' + (error.error?.message || error.message);
-            this.loading = false;
-          }
-        });
-    } else {
-      // Crear nuevo estudiante
-      this.estudianteService.createEstudiante(estudiante)
-        .subscribe({
-          next: (nuevoEstudiante) => {
-            this.router.navigate(['/estudiantes', nuevoEstudiante.id]);
-          },
-          error: (error) => {
-            this.errorMessage = 'Error al crear el estudiante. ' + (error.error?.message || error.message);
-            this.loading = false;
-          }
-        });
+    this.estudianteService.getEstudiante(this.estudianteId).subscribe({
+      next: (estudiante) => {
+        this.estudianteForm.patchValue(estudiante);
+        this.loading = false;
+      },
+      error: (error) => {
+        this.errorMessage = 'Error al cargar los datos del estudiante';
+        this.loading = false;
+      }
+    });
+  }
+
+  onSubmit(): void {
+    if (this.estudianteForm.valid) {
+      this.loading = true;
+      const estudiante = this.estudianteForm.value;
+
+      const request = this.modoEdicion ?
+        this.estudianteService.actualizarEstudiante(this.estudianteId, estudiante) :
+        this.estudianteService.crearEstudiante(estudiante);
+
+      request.subscribe({
+        next: () => {
+          this.router.navigate(['/estudiantes']);
+        },
+        error: (error) => {
+          this.errorMessage = 'Error al guardar el estudiante';
+          this.loading = false;
+        }
+      });
     }
   }
-  
+
   cancelar(): void {
-    if (this.modoEdicion && this.estudianteId) {
-      this.router.navigate(['/estudiantes', this.estudianteId]);
-    } else {
-      this.router.navigate(['/estudiantes']);
-    }
+    this.router.navigate(['/estudiantes']);
   }
 }

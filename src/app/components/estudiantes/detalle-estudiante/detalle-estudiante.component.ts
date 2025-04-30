@@ -3,19 +3,7 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { EstudianteService } from '../../../services/estudiante.service';
 import { MateriaService } from '../../../services/materia.service';
-
-interface Estudiante {
-  id?: number;
-  nombre: string;
-  email: string;
-}
-
-interface Materia {
-  id?: number;
-  nombre: string;
-  descripcion: string;
-  creditos: number;
-}
+import { Estudiante } from '../../../models/estudiante.interface';
 
 @Component({
   selector: 'app-detalle-estudiante',
@@ -25,13 +13,12 @@ interface Materia {
   styleUrls: ['./detalle-estudiante.component.css']
 })
 export class DetalleEstudianteComponent implements OnInit {
-  estudianteId: number = 0;
+  estudianteId: string = '';
   estudiante: Estudiante | null = null;
-  materias: Materia[] = [];
-  materiasDisponibles: Materia[] = [];
-  loading: boolean = false;
-  errorMessage: string = '';
-  
+  materiasDisponibles: any[] = [];
+  loading = false;
+  errorMsg = '';
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -40,10 +27,12 @@ export class DetalleEstudianteComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    this.route.params.subscribe(params => {
-      this.estudianteId = +params['id'];
-      this.cargarEstudiante();
-      this.cargarMaterias();
+    this.route.paramMap.subscribe(params => {
+      const id = params.get('id');
+      if (id) {
+        this.estudianteId = id;
+        this.cargarEstudiante();
+      }
     });
   }
 
@@ -52,67 +41,57 @@ export class DetalleEstudianteComponent implements OnInit {
     this.estudianteService.getEstudiante(this.estudianteId)
       .subscribe({
         next: (data) => {
-          this.estudiante = data.estudiante;
-          this.materias = data.materias;
+          this.estudiante = data;
+          this.cargarMateriasDisponibles();
           this.loading = false;
         },
-        error: (error) => {
-          this.errorMessage = 'Error al cargar el estudiante. ' + (error.error?.message || error.message);
+        error: (err: any) => {
+          this.errorMsg = 'Error al cargar los datos del estudiante';
           this.loading = false;
         }
       });
   }
 
-  cargarMaterias(): void {
+  cargarMateriasDisponibles(): void {
     this.materiaService.getMaterias()
       .subscribe({
         next: (data) => {
           this.materiasDisponibles = data.filter(materia => 
-            !this.materias.some(m => m.id === materia.id)
+            !(this.estudiante?.materias?.some((m: { id: number; }) => m.id === materia.id))
           );
         },
         error: (error) => {
-          this.errorMessage = 'Error al cargar materias disponibles. ' + (error.error?.message || error.message);
+          this.errorMsg = 'Error al cargar materias disponibles. ' + (error.error?.message || error.message);
         }
       });
   }
 
-  matricular(materiaId: number): void {
+  matricularMateria(materiaId: string): void {
+    if (!materiaId) return;
+    
     this.loading = true;
-    this.estudianteService.matricularEstudiante(this.estudianteId, materiaId)
+    this.estudianteService.agregarMateriaAEstudiante(this.estudianteId, materiaId)
       .subscribe({
-        next: () => {
-          // Actualizar la lista de materias matriculadas
-          const materiaMatriculada = this.materiasDisponibles.find(m => m.id === materiaId);
-          if (materiaMatriculada) {
-            this.materias.push(materiaMatriculada);
-            this.materiasDisponibles = this.materiasDisponibles.filter(m => m.id !== materiaId);
-          }
-          this.loading = false;
+        next: (response) => {
+          this.cargarEstudiante(); // Recargar datos con las materias actualizadas
         },
-        error: (error) => {
-          this.errorMessage = 'Error al matricular en la materia. ' + (error.error?.message || error.message);
+        error: (err: any) => {
+          this.errorMsg = 'Error al matricular la materia';
           this.loading = false;
         }
       });
   }
 
-  cancelarMatricula(materiaId: number): void {
-    if (confirm('¿Está seguro de cancelar la inscripción a esta materia?')) {
+  retirarMateria(materiaId: string): void {
+    if (confirm('¿Está seguro de retirar esta materia?')) {
       this.loading = true;
-      this.estudianteService.cancelarMatricula(this.estudianteId, materiaId)
+      this.estudianteService.retirarMateriaDeEstudiante(this.estudianteId, materiaId)
         .subscribe({
-          next: () => {
-            // Actualizar la lista de materias
-            const materiaCancelada = this.materias.find(m => m.id === materiaId);
-            if (materiaCancelada) {
-              this.materiasDisponibles.push(materiaCancelada);
-              this.materias = this.materias.filter(m => m.id !== materiaId);
-            }
-            this.loading = false;
+          next: (response) => {
+            this.cargarEstudiante(); // Recargar datos con las materias actualizadas
           },
-          error: (error) => {
-            this.errorMessage = 'Error al cancelar la matrícula. ' + (error.error?.message || error.message);
+          error: (err: any) => {
+            this.errorMsg = 'Error al retirar la materia';
             this.loading = false;
           }
         });

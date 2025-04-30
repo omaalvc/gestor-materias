@@ -4,7 +4,7 @@ import { CommonModule } from '@angular/common';
 import { EstudianteService } from '../../../services/estudiante.service';
 
 interface Estudiante {
-  id?: number;
+  id?: string;
   nombre: string;
   email: string;
 }
@@ -19,7 +19,7 @@ interface Estudiante {
 export class ListaEstudiantesComponent implements OnInit {
   estudiantes: Estudiante[] = [];
   loading: boolean = false;
-  errorMessage: string = '';
+  errorMsg: string = '';
   
   constructor(
     private estudianteService: EstudianteService,
@@ -39,13 +39,13 @@ export class ListaEstudiantesComponent implements OnInit {
           this.loading = false;
         },
         error: (error) => {
-          this.errorMessage = 'Error al cargar estudiantes. ' + (error.error?.message || error.message);
+          this.errorMsg = 'Error al cargar estudiantes. ' + (error.error?.message || error.message);
           this.loading = false;
         }
       });
   }
 
-  verDetalle(id: number): void {
+  verDetalle(id: string): void {
     this.router.navigate(['/estudiantes', id]);
   }
 
@@ -53,19 +53,21 @@ export class ListaEstudiantesComponent implements OnInit {
     this.router.navigate(['/estudiantes/nuevo']);
   }
 
-  editarEstudiante(id: number): void {
+  editarEstudiante(id: string): void {
     this.router.navigate(['/estudiantes/editar', id]);
   }
 
-  eliminarEstudiante(id: number): void {
+  eliminarEstudiante(id: string): void {
     if (confirm('¿Está seguro de eliminar este estudiante?')) {
-      this.estudianteService.deleteEstudiante(id)
+      this.loading = true;
+      this.estudianteService.eliminarEstudiante(id)
         .subscribe({
           next: () => {
-            this.estudiantes = this.estudiantes.filter(e => e.id !== id);
+            this.cargarEstudiantes();
           },
-          error: (error) => {
-            this.errorMessage = 'Error al eliminar estudiante. ' + (error.error?.message || error.message);
+          error: (error: any) => {
+            this.errorMsg = 'Error al eliminar el estudiante';
+            this.loading = false;
           }
         });
     }

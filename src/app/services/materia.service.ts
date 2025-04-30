@@ -41,7 +41,7 @@ export class MateriaService {
   }
 
   getMaterias(): Observable<Materia[]> {
-    return this.http.get<Materia[]>(this.apiUrl)
+    return this.http.get<Materia[]>(this.apiUrl, { headers: this.getHeaders() })
       .pipe(
         catchError(error => {
           console.error('Error obteniendo materias:', error);
@@ -51,7 +51,7 @@ export class MateriaService {
   }
 
   getMateria(id: number): Observable<Materia> {
-    return this.http.get<Materia>(`${this.apiUrl}/${id}`)
+    return this.http.get<Materia>(`${this.apiUrl}/${id}`, { headers: this.getHeaders() })
       .pipe(
         catchError(error => {
           console.error('Error obteniendo detalle de materia:', error);
@@ -61,7 +61,7 @@ export class MateriaService {
   }
 
   createMateria(materia: Materia): Observable<Materia> {
-    return this.http.post<Materia>(this.apiUrl, materia)
+    return this.http.post<Materia>(this.apiUrl, materia, { headers: this.getHeaders() })
       .pipe(
         catchError(error => {
           console.error('Error al crear materia:', error);
@@ -71,7 +71,7 @@ export class MateriaService {
   }
 
   updateMateria(materia: Materia): Observable<any> {
-    return this.http.put(`${this.apiUrl}/${materia.id}`, materia)
+    return this.http.put(`${this.apiUrl}/${materia.id}`, materia, { headers: this.getHeaders() })
       .pipe(
         catchError(error => {
           console.error('Error al actualizar materia:', error);
@@ -81,7 +81,7 @@ export class MateriaService {
   }
 
   deleteMateria(id: number): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/${id}`)
+    return this.http.delete(`${this.apiUrl}/${id}`, { headers: this.getHeaders() })
       .pipe(
         catchError(error => {
           console.error('Error al eliminar materia:', error);
@@ -92,7 +92,7 @@ export class MateriaService {
 
   // Matricular estudiante en materia
   matricularEstudiante(materiaId: number, estudianteId: number): Observable<any> {
-    return this.http.post(`${this.apiUrl}/${materiaId}/estudiantes/${estudianteId}`, {})
+    return this.http.post(`${this.apiUrl}/${materiaId}/estudiantes/${estudianteId}`, {}, { headers: this.getHeaders() })
       .pipe(
         catchError(error => {
           console.error('Error al matricular estudiante:', error);
@@ -103,7 +103,7 @@ export class MateriaService {
 
   // Remover estudiante de materia
   removerEstudiante(materiaId: number, estudianteId: number): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/${materiaId}/estudiantes/${estudianteId}`)
+    return this.http.delete(`${this.apiUrl}/${materiaId}/estudiantes/${estudianteId}`, { headers: this.getHeaders() })
       .pipe(
         catchError(error => {
           console.error('Error al remover estudiante:', error);

@@ -42,11 +42,11 @@ export class ListaMateriasComponent implements OnInit {
   }
 
   verDetalle(id: number): void {
-    this.router.navigate(['/admin/materias/view', id]);
+    this.router.navigate(['/materias/view', id]);
   }
 
   editarMateria(id: number): void {
-    this.router.navigate(['/admin/materias/edit', id]);
+    this.router.navigate(['/materias/edit', id]);
   }
 
   eliminarMateria(id: number): void {
@@ -64,6 +64,6 @@ export class ListaMateriasComponent implements OnInit {
   }
 
   nuevaMateria(): void {
-    this.router.navigate(['/admin/materias/crear']);
+    this.router.navigate(['/materias/crear']);
   }
 }

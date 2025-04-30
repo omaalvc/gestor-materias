@@ -7,6 +7,7 @@ import { DetalleMateriaComponent } from './components/materias/detalle-materia/d
 import { ListaEstudiantesComponent } from './components/estudiantes/lista-estudiantes/lista-estudiantes.component';
 import { DetalleEstudianteComponent } from './components/estudiantes/detalle-estudiante/detalle-estudiante.component';
 import { FormularioEstudianteComponent } from './components/estudiantes/formulario-estudiante/formulario-estudiante.component';
+import { RegistroMateriasComponent } from './components/estudiantes/registro-materias/registro-materias.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -26,6 +27,13 @@ export const routes: Routes = [
     path: 'materias',
     component: ListaMateriasComponent,
     canActivate: [AuthGuard]
+  },
+  // Ruta para registro de materias (solo estudiantes)
+  {
+    path: 'registro-materias',
+    component: RegistroMateriasComponent,
+    canActivate: [AuthGuard],
+    data: { roles: ['Estudiante'] }
   },
   // Rutas para estudiantes
   {

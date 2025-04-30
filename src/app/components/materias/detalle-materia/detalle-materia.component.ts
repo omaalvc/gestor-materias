@@ -11,9 +11,8 @@ import { MateriaService, Materia } from '../../../services/materia.service';
   imports: [CommonModule, RouterModule]
 })
 export class DetalleMateriaComponent implements OnInit {
-  materiaId: number = 0;
   materia: Materia | null = null;
-  loading: boolean = true;
+  loading = true;
   error: string | null = null;
 
   constructor(
@@ -23,32 +22,35 @@ export class DetalleMateriaComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    this.route.params.subscribe(params => {
-      this.materiaId = +params['id'];
-      if (this.materiaId) {
-        this.cargarMateria();
+    console.log('DetalleMateriaComponent initialized');
+    const id = this.route.snapshot.paramMap.get('id');
+    console.log('ID from route:', id);
+    
+    if (id) {
+      this.cargarMateria(+id);
+    } else {
+      this.error = 'ID de materia no proporcionado';
+      this.loading = false;
+    }
+  }
+
+  cargarMateria(id: number): void {
+    console.log('Cargando materia con ID:', id);
+    this.materiaService.getMateria(id).subscribe({
+      next: (data) => {
+        console.log('Materia cargada:', data);
+        this.materia = data;
+        this.loading = false;
+      },
+      error: (error) => {
+        console.error('Error al cargar materia:', error);
+        this.error = 'Error al cargar la información de la materia';
+        this.loading = false;
       }
     });
   }
 
-  cargarMateria(): void {
-    this.loading = true;
-    this.materiaService.getMateria(this.materiaId)
-      .subscribe({
-        next: (data) => {
-          console.log('Materia cargada:', data);
-          this.materia = data;
-          this.loading = false;
-        },
-        error: (error) => {
-          console.error('Error al cargar materia:', error);
-          this.error = 'Error al cargar la información de la materia. Por favor intente nuevamente.';
-          this.loading = false;
-        }
-      });
-  }
-
   volver(): void {
-    this.router.navigate(['/admin/materias']);
+    this.router.navigate(['/materias']);
   }
 }
