@@ -57,9 +57,18 @@ export class RegistroMateriasComponent implements OnInit {
   cargarMateriasDisponibles(): void {
     this.materiaService.getMaterias().subscribe({
       next: (materias) => {
-        // Filtrar las materias que el estudiante no tiene registradas
-        const materiasIds = this.materiasRegistradas.map((m: any) => m.id);
-        this.materiasDisponibles = materias.filter((m: any) => !materiasIds.includes(m.id));
+        // Obtener los IDs de profesores ya asignados
+        const profesoresAsignados = this.materiasRegistradas
+          .map(m => m.profesor?.id)
+          .filter(id => id != null);
+
+        // Filtrar materias que no estén registradas y cuyos profesores no estén asignados
+        this.materiasDisponibles = materias.filter((materia: any) => {
+          const noEstaRegistrada = !this.materiasRegistradas.some(m => m.id === materia.id);
+          const profesorNoAsignado = !profesoresAsignados.includes(materia.profesor?.id);
+          return noEstaRegistrada && profesorNoAsignado;
+        });
+        
         this.loading = false;
       },
       error: (error: any) => {
@@ -83,7 +92,7 @@ export class RegistroMateriasComponent implements OnInit {
     this.loading = true;
     this.limpiarMensajes();
     
-    this.estudianteService.agregarMateriaAEstudiante(this.estudianteId, materia.id).subscribe({
+    this.materiaService.matricularEstudiante(materia.id, parseInt(this.estudianteId)).subscribe({
       next: () => {
         this.materiasRegistradas.push(materia);
         this.materiasDisponibles = this.materiasDisponibles.filter(m => m.id !== materia.id);
@@ -91,7 +100,7 @@ export class RegistroMateriasComponent implements OnInit {
         this.loading = false;
       },
       error: (error: any) => {
-        this.mostrarError('Error al registrar la materia');
+        this.mostrarError(error.message || 'Error al registrar la materia');
         this.loading = false;
       }
     });
@@ -101,13 +110,11 @@ export class RegistroMateriasComponent implements OnInit {
     this.loading = true;
     this.limpiarMensajes();
     
-    // Retirar la materia de las materias del estudiante
     this.estudianteService.retirarMateriaDeEstudiante(this.estudianteId, materia.id).subscribe({
       next: () => {
-        // Mover la materia de registradas a disponibles
-        this.materiasDisponibles.push(materia);
         this.materiasRegistradas = this.materiasRegistradas.filter((m: any) => m.id !== materia.id);
-        
+        // Recargar materias disponibles para actualizar la lista correctamente
+        this.cargarMateriasDisponibles();
         this.mostrarExito(`Materia "${materia.nombre}" retirada correctamente`);
         this.loading = false;
       },
