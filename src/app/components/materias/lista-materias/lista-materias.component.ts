@@ -33,7 +33,7 @@ export class ListaMateriasComponent implements OnInit {
 
   ngOnInit(): void {
     this.cargarMaterias();
-    this.authService.currentUser.subscribe(user => {
+    this.authService.currentUser$.subscribe(user => {
       this.isAdmin = user?.role === 'Admin';
     });
   }

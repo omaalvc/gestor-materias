@@ -6,10 +6,16 @@ import { environment } from '../../environments/environment';
 export interface Materia {
   id: number;
   nombre: string;
-  codigo: string;
   descripcion: string;
   creditos: number;
-  estudiantes?: any[];
+  profesor?: {
+    id: number;
+    nombre: string;
+  };
+  estudiantes?: {
+    id: number;
+    nombre: string;
+  }[];
 }
 
 @Injectable({
@@ -24,8 +30,8 @@ export class MateriaService {
     return this.http.get<Materia[]>(this.apiUrl);
   }
 
-  getMateria(id: number): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/${id}`);
+  getMateria(id: number): Observable<Materia> {
+    return this.http.get<Materia>(`${this.apiUrl}/${id}`);
   }
 
   createMateria(materia: Materia): Observable<any> {
@@ -38,5 +44,9 @@ export class MateriaService {
 
   deleteMateria(id: number): Observable<any> {
     return this.http.delete<any>(`${this.apiUrl}/${id}`);
+  }
+
+  getEstudiantesMateria(id: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/${id}/estudiantes`);
   }
 }
