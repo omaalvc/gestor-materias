@@ -19,6 +19,8 @@ export class RegistroMateriasComponent implements OnInit {
   estudianteId: string = '';
   mensajeExito: string = '';
   mensajeError: string = '';
+  mostrarModalCambio = false;
+  materiaActual: any = null;
 
   constructor(
     private materiaService: MateriaService,
@@ -123,6 +125,47 @@ export class RegistroMateriasComponent implements OnInit {
         this.loading = false;
       }
     });
+  }
+
+  editarMateria(materia: any): void {
+    this.materiaActual = materia;
+    this.mostrarModalCambio = true;
+  }
+
+  cerrarModal(): void {
+    this.mostrarModalCambio = false;
+    this.materiaActual = null;
+  }
+
+  seleccionarNuevaMateria(nuevaMateria: any): void {
+    if (!this.materiaActual || !this.estudianteId) return;
+
+    this.loading = true;
+    this.limpiarMensajes();
+
+    // Primero retiramos la materia actual
+    this.estudianteService.retirarMateriaDeEstudiante(this.estudianteId, this.materiaActual.id)
+      .subscribe({
+        next: () => {
+          // Luego inscribimos la nueva materia
+          this.estudianteService.agregarMateriaAEstudiante(this.estudianteId, nuevaMateria.id)
+            .subscribe({
+              next: () => {
+                this.mensajeExito = 'Materia cambiada exitosamente';
+                this.cerrarModal();
+                this.cargarDatosEstudiante();
+              },
+              error: (error) => {
+                this.mensajeError = error.error?.message || 'Error al inscribir la nueva materia';
+                this.loading = false;
+              }
+            });
+        },
+        error: (error) => {
+          this.mensajeError = error.error?.message || 'Error al retirar la materia actual';
+          this.loading = false;
+        }
+      });
   }
 
   mostrarExito(mensaje: string): void {

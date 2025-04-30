@@ -63,13 +63,42 @@
                 <p class="mb-1"><strong>Profesor:</strong> {{ materia.profesor?.nombre || 'No asignado' }}</p>
                 <p class="mb-1"><small>{{ materia.descripcion }}</small></p>
               </div>
-              <button class="btn btn-danger btn-sm" (click)="retirarMateria(materia)" [disabled]="loading">
-                <i class="fas fa-trash-alt me-1"></i> Retirar
-              </button>
+              <div>
+                <button class="btn btn-primary btn-sm me-2" (click)="editarMateria(materia)" [disabled]="loading">
+                  <i class="fas fa-edit me-1"></i> Editar
+                </button>
+                <button class="btn btn-danger btn-sm" (click)="retirarMateria(materia)" [disabled]="loading">
+                  <i class="fas fa-trash me-1"></i> Retirar
+                </button>
+              </div>
             </li>
           </ul>
         </div>
       </div>
     </div>
   </div>
+
+  <!-- Modal para cambio de materia -->
+  <div class="modal" [class.show]="mostrarModalCambio" [style.display]="mostrarModalCambio ? 'block' : 'none'">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Cambiar Materia</h5>
+          <button type="button" class="btn-close" (click)="cerrarModal()"></button>
+        </div>
+        <div class="modal-body">
+          <p>Seleccione la nueva materia:</p>
+          <div class="list-group">
+            <button *ngFor="let materia of materiasDisponibles" 
+                    class="list-group-item list-group-item-action"
+                    (click)="seleccionarNuevaMateria(materia)"
+                    [disabled]="loading">
+              {{ materia.nombre }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div *ngIf="mostrarModalCambio" class="modal-backdrop show"></div>
 </div>
