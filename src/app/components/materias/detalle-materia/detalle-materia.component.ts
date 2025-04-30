@@ -21,6 +21,14 @@ export class DetalleMateriaComponent implements OnInit {
     private materiaService: MateriaService
   ) { }
 
+  verMateriasEstudiante(estudianteId: number): void {
+    this.router.navigate(['/estudiantes', estudianteId], {
+      queryParams: {
+        materiaId: this.route.snapshot.paramMap.get('id')
+      }
+    });
+  }
+
   ngOnInit(): void {
     console.log('DetalleMateriaComponent - ngOnInit');
     const id = this.route.snapshot.paramMap.get('id');

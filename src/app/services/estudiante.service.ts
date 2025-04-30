@@ -9,7 +9,7 @@ import { Estudiante } from '../models/estudiante.interface';
   providedIn: 'root'
 })
 export class EstudianteService {
-  private apiUrl = `${environment.apiUrl}/estudiantes`;
+  private apiUrl = `${environment.apiUrl}/Estudiantes`;
 
   constructor(
     private http: HttpClient,
@@ -38,7 +38,7 @@ export class EstudianteService {
 
   // Métodos para el registro de materias
   agregarMateriaAEstudiante(estudianteId: string, materiaId: string): Observable<Estudiante> {
-    return this.http.post<Estudiante>(`${this.apiUrl}/${estudianteId}/materias`, { materiaId });
+    return this.http.post<Estudiante>(`${this.apiUrl}/${estudianteId}/materias/${materiaId}`, {});
   }
 
   retirarMateriaDeEstudiante(estudianteId: string, materiaId: string): Observable<Estudiante> {

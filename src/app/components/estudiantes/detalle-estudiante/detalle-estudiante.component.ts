@@ -1,19 +1,21 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { EstudianteService } from '../../../services/estudiante.service';
 import { MateriaService } from '../../../services/materia.service';
 import { Estudiante } from '../../../models/estudiante.interface';
+import { Location } from '@angular/common';
 
 @Component({
   selector: 'app-detalle-estudiante',
-  standalone: true,
-  imports: [CommonModule, RouterModule],
   templateUrl: './detalle-estudiante.component.html',
-  styleUrls: ['./detalle-estudiante.component.css']
+  styleUrls: ['./detalle-estudiante.component.css'],
+  standalone: true,
+  imports: [CommonModule]
 })
 export class DetalleEstudianteComponent implements OnInit {
   estudianteId: string = '';
+  materiaId: string | null = null;
   estudiante: Estudiante | null = null;
   materiasDisponibles: any[] = [];
   loading = false;
@@ -23,7 +25,8 @@ export class DetalleEstudianteComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private estudianteService: EstudianteService,
-    private materiaService: MateriaService
+    private materiaService: MateriaService,
+    private location: Location
   ) { }
 
   ngOnInit(): void {
@@ -31,6 +34,7 @@ export class DetalleEstudianteComponent implements OnInit {
       const id = params.get('id');
       if (id) {
         this.estudianteId = id;
+        this.materiaId = this.route.snapshot.queryParamMap.get('materiaId');
         this.cargarEstudiante();
       }
     });
@@ -99,6 +103,10 @@ export class DetalleEstudianteComponent implements OnInit {
   }
 
   volver(): void {
-    this.router.navigate(['/estudiantes']);
+    if (this.materiaId) {
+      this.router.navigate(['/admin/materias/view', this.materiaId]);
+    } else {
+      this.location.back();
+    }
   }
 }

@@ -5,6 +5,7 @@ import { ListaMateriasComponent } from './components/materias/lista-materias/lis
 
 import { DetalleMateriaComponent } from './components/materias/detalle-materia/detalle-materia.component';
 import { RegistroMateriasComponent } from './components/estudiantes/registro-materias/registro-materias.component';
+import { DetalleEstudianteComponent } from './components/estudiantes/detalle-estudiante/detalle-estudiante.component';
 import { authGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
@@ -17,7 +18,8 @@ export const routes: Routes = [
       { path: 'materias', component: ListaMateriasComponent },
       { path: 'materias/view/:id', component: DetalleMateriaComponent },
       { path: 'materias/crear', component: RegistroMateriasComponent, canActivate: [authGuard] },
-      { path: 'materias/edit/:id', component: RegistroMateriasComponent, canActivate: [authGuard] }
+      { path: 'materias/edit/:id', component: RegistroMateriasComponent, canActivate: [authGuard] },
+      { path: 'estudiantes/:id', component: DetalleEstudianteComponent }
     ]
   }
 ];
