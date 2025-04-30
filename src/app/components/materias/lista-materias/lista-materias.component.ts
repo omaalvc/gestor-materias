@@ -16,6 +16,7 @@ export class ListaMateriasComponent implements OnInit {
   loading = false;
   error: string | null = null;
   role: string = '';
+  estudianteId: number | null = null;
 
   constructor(
     private materiaService: MateriaService,
@@ -24,11 +25,13 @@ export class ListaMateriasComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    this.authService.currentUser$.subscribe(user => {
-      if (user) {
-        this.role = user.role;
-      }
-    });
+    const currentUser = this.authService.getCurrentUser();
+    if (currentUser) {
+      this.role = currentUser.role;
+      this.estudianteId = currentUser.estudianteId;
+      console.log('Usuario actual:', currentUser);
+      console.log('ID del estudiante:', this.estudianteId);
+    }
     this.cargarMaterias();
   }
 
@@ -74,5 +77,30 @@ export class ListaMateriasComponent implements OnInit {
         }
       });
     }
+  }
+
+  inscribirMateria(materiaId: number): void {
+    if (!this.estudianteId) {
+      console.error('Error: ID de estudiante no disponible');
+      this.error = 'Error: Usuario no identificado';
+      return;
+    }
+
+    console.log('Intentando inscribir materia. ID de estudiante:', this.estudianteId, 'ID de materia:', materiaId);
+    this.loading = true;
+    this.error = null;
+
+    this.materiaService.matricularEstudiante(materiaId, this.estudianteId).subscribe({
+      next: (response) => {
+        this.loading = false;
+        alert('Inscripción realizada con éxito');
+        this.cargarMaterias();
+      },
+      error: (error) => {
+        this.loading = false;
+        this.error = error.message;
+        alert(this.error);
+      }
+    });
   }
 }

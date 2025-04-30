@@ -35,7 +35,7 @@ export class RegistroMateriasComponent implements OnInit {
     const userString = localStorage.getItem('currentUser');
     if (userString) {
       const user = JSON.parse(userString);
-      this.estudianteId = user.id;
+      this.estudianteId = user.estudianteId;
       
       // Cargar las materias del estudiante
       this.estudianteService.getEstudiante(this.estudianteId).subscribe({
@@ -70,16 +70,23 @@ export class RegistroMateriasComponent implements OnInit {
   }
 
   registrarMateria(materia: any): void {
+    // Verificar si ya tiene una materia con el mismo profesor
+    const profesorExistente = this.materiasRegistradas.find(m => 
+      m.profesor?.id === materia.profesor?.id
+    );
+
+    if (profesorExistente) {
+      this.mostrarError(`No puedes inscribir esta materia porque ya tienes una materia con el profesor ${materia.profesor.nombre}`);
+      return;
+    }
+
     this.loading = true;
     this.limpiarMensajes();
     
-    // Agregar la materia a las materias del estudiante
     this.estudianteService.agregarMateriaAEstudiante(this.estudianteId, materia.id).subscribe({
       next: () => {
-        // Mover la materia de disponibles a registradas
         this.materiasRegistradas.push(materia);
         this.materiasDisponibles = this.materiasDisponibles.filter(m => m.id !== materia.id);
-        
         this.mostrarExito(`Materia "${materia.nombre}" registrada correctamente`);
         this.loading = false;
       },

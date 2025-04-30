@@ -40,6 +40,9 @@
               <button type="button" class="btn btn-info me-2" (click)="verDetalle(materia.id)">
                 <i class="fas fa-eye me-1"></i> Ver
               </button>
+              <button *ngIf="role === 'Estudiante'" type="button" class="btn btn-success me-2" (click)="inscribirMateria(materia.id)">
+                <i class="fas fa-user-plus me-1"></i> Inscribir
+              </button>
               <button *ngIf="role !== 'Estudiante'" type="button" class="btn btn-warning me-2" (click)="editarMateria(materia.id)">
                 <i class="fas fa-edit me-1"></i> Editar
               </button>

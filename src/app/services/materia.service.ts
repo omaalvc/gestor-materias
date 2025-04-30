@@ -98,11 +98,14 @@ export class MateriaService {
 
   // Matricular estudiante en materia
   matricularEstudiante(materiaId: number, estudianteId: number): Observable<any> {
-    return this.http.post(`${this.apiUrl}/${materiaId}/estudiantes/${estudianteId}`, {}, { headers: this.getHeaders() })
+    const url = `${environment.apiUrl}/Registros/InscribirMateria?estudianteId=${estudianteId}&materiaId=${materiaId}`;
+    return this.http.post(url, {}, { headers: this.getHeaders() })
       .pipe(
+        tap(response => console.log('Respuesta del servidor:', response)),
         catchError(error => {
-          console.error('Error al matricular estudiante:', error);
-          return throwError(() => new Error('Error al matricular estudiante en la materia.'));
+          console.error('Error detallado:', error);
+          const mensaje = error.error?.message || 'Error al matricular estudiante en la materia.';
+          return throwError(() => new Error(mensaje));
         })
       );
   }

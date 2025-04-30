@@ -34,7 +34,7 @@
             <li class="list-group-item d-flex justify-content-between align-items-center" *ngFor="let materia of materiasDisponibles">
               <div>
                 <h5 class="mb-1">{{ materia.nombre }}</h5>
-                <p class="mb-1"><strong>Profesor:</strong> {{ materia.profesor?.nombres || 'No asignado' }}</p>
+                <p class="mb-1"><strong>Profesor:</strong> {{ materia.profesor?.nombre || 'No asignado' }}</p>
                 <p class="mb-1"><small>{{ materia.descripcion }}</small></p>
               </div>
               <button class="btn btn-success btn-sm" (click)="registrarMateria(materia)" [disabled]="loading">
@@ -60,7 +60,7 @@
             <li class="list-group-item d-flex justify-content-between align-items-center" *ngFor="let materia of materiasRegistradas">
               <div>
                 <h5 class="mb-1">{{ materia.nombre }}</h5>
-                <p class="mb-1"><strong>Profesor:</strong> {{ materia.profesor?.nombres || 'No asignado' }}</p>
+                <p class="mb-1"><strong>Profesor:</strong> {{ materia.profesor?.nombre || 'No asignado' }}</p>
                 <p class="mb-1"><small>{{ materia.descripcion }}</small></p>
               </div>
               <button class="btn btn-danger btn-sm" (click)="retirarMateria(materia)" [disabled]="loading">

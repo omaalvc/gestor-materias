@@ -22,22 +22,22 @@ export class AuthService {
     this.currentUser$ = this.currentUserSubject.asObservable();
   }
 
-  login(username: string, password: string): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/login`, { username, password })
+  login(email: string, password: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/login`, { email, password })
       .pipe(
         tap(response => {
-          if (response && response.success && response.token) {
-            // Guarda el token y la información del usuario en localStorage
-            localStorage.setItem('token', response.token);
-            localStorage.setItem('currentUser', JSON.stringify(response.user));
-            
-            // Actualiza el BehaviorSubject con el usuario actual
-            this.currentUserSubject.next(response.user);
+          if (response.token) {
+            const user = {
+              id: response.user.id,
+              estudianteId: response.user.estudianteId,
+              username: response.user.username,
+              role: response.user.role,
+              token: response.token
+            };
+            console.log('Usuario almacenado:', user);
+            localStorage.setItem('user', JSON.stringify(user));
+            this.currentUserSubject.next(user);
           }
-        }),
-        catchError(error => {
-          console.error('Error en el login', error);
-          return of(null);
         })
       );
   }

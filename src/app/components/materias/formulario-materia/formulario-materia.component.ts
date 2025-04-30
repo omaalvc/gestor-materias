@@ -5,7 +5,7 @@ import { CommonModule } from '@angular/common';
 import { MateriaService } from '../../../services/materia.service';
 
 interface Materia {
-  id?: number;
+  id: number;
   nombre: string;
   descripcion: string;
   creditos: number;
@@ -75,6 +75,7 @@ export class FormularioMateriaComponent implements OnInit {
     }
     
     const materia: Materia = {
+      id: this.materiaId || 0,
       nombre: this.materiaForm.value.nombre,
       descripcion: this.materiaForm.value.descripcion,
       creditos: this.materiaForm.value.creditos
@@ -84,7 +85,7 @@ export class FormularioMateriaComponent implements OnInit {
     
     if (this.modoEdicion && this.materiaId) {
       // Actualizar materia existente
-      this.materiaService.updateMateria(this.materiaId, materia)
+      this.materiaService.updateMateria({ ...materia, id: this.materiaId })
         .subscribe({
           next: () => {
             this.router.navigate(['/materias', this.materiaId]);
