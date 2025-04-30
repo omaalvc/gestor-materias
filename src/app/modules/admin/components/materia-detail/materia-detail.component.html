@@ -1,0 +1,78 @@
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Detalle de Materia</h2>
+    <button class="btn btn-secondary" (click)="goBack()">Volver</button>
+  </div>
+
+  <div class="alert alert-danger" *ngIf="errorMessage">{{ errorMessage }}</div>
+
+  <div *ngIf="loading" class="text-center my-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Cargando...</span>
+    </div>
+    <p class="mt-2">Cargando información...</p>
+  </div>
+
+  <div *ngIf="!loading && materia">
+    <div class="card mb-4">
+      <div class="card-header bg-primary text-white">
+        <h3 class="mb-0">{{ materia.nombre }}</h3>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-6">
+            <p><strong>Código:</strong> {{ materia.codigo }}</p>
+            <p><strong>Créditos:</strong> {{ materia.creditos }}</p>
+          </div>
+          <div class="col-md-6 d-flex justify-content-end">
+            <button class="btn btn-warning me-2" (click)="editMateria()">
+              <i class="bi bi-pencil me-1"></i> Editar
+            </button>
+            <button class="btn btn-danger" (click)="deleteMateria()">
+              <i class="bi bi-trash me-1"></i> Eliminar
+            </button>
+          </div>
+        </div>
+        
+        <hr>
+        
+        <div class="mb-4">
+          <h4>Descripción</h4>
+          <p>{{ materia.descripcion }}</p>
+        </div>
+        
+        <div>
+          <h4>Estudiantes Matriculados</h4>
+          <div *ngIf="estudiantes.length === 0" class="alert alert-info">
+            No hay estudiantes matriculados en esta materia.
+          </div>
+          
+          <div *ngIf="estudiantes.length > 0" class="table-responsive">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Nombre</th>
+                  <th>Email</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let estudiante of estudiantes">
+                  <td>{{ estudiante.id }}</td>
+                  <td>{{ estudiante.nombre }}</td>
+                  <td>{{ estudiante.email }}</td>
+                  <td>
+                    <button class="btn btn-sm btn-info" [routerLink]="['/admin/estudiantes', estudiante.id]">
+                      <i class="bi bi-eye"></i> Ver
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

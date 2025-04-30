@@ -1,0 +1,60 @@
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Listado de Materias</h2>
+    <button class="btn btn-primary" routerLink="/admin/materias/new">Nueva Materia</button>
+  </div>
+
+  <div class="alert alert-danger" *ngIf="errorMessage">{{ errorMessage }}</div>
+
+  <div class="card">
+    <div class="card-body">
+      <div *ngIf="loading" class="text-center">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Cargando...</span>
+        </div>
+        <p class="mt-2">Cargando materias...</p>
+      </div>
+
+      <div *ngIf="!loading && materias.length === 0" class="alert alert-info">
+        No se encontraron materias registradas.
+      </div>
+
+      <div *ngIf="!loading && materias.length > 0" class="table-responsive">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Código</th>
+              <th>Nombre</th>
+              <th>Créditos</th>
+              <th>Descripción</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let materia of materias">
+              <td>{{ materia.id }}</td>
+              <td>{{ materia.codigo }}</td>
+              <td>{{ materia.nombre }}</td>
+              <td>{{ materia.creditos }}</td>
+              <td>{{ materia.descripcion | slice:0:50 }}{{ materia.descripcion.length > 50 ? '...' : '' }}</td>
+              <td>
+                <div class="btn-group" role="group">
+                  <button class="btn btn-sm btn-info me-1" (click)="viewMateria(materia.id)">
+                    <i class="bi bi-eye"></i> Ver
+                  </button>
+                  <button class="btn btn-sm btn-warning me-1" (click)="editMateria(materia.id)">
+                    <i class="bi bi-pencil"></i> Editar
+                  </button>
+                  <button class="btn btn-sm btn-danger" (click)="deleteMateria(materia.id)">
+                    <i class="bi bi-trash"></i> Eliminar
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

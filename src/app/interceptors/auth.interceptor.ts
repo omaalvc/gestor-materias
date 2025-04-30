@@ -3,21 +3,28 @@ import {
   HttpRequest,
   HttpHandler,
   HttpEvent,
-  HttpInterceptor
+  HttpInterceptor,
+  HttpErrorResponse
 } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, throwError } from 'rxjs';
+import { catchError } from 'rxjs/operators';
+import { Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor {
 
-  constructor(private authService: AuthService) {}
+  constructor(
+    private authService: AuthService,
+    private router: Router
+  ) {}
 
-  intercept(request: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
+  intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
+    // Obtener el token
     const token = this.authService.getToken();
     
+    // Si hay un token, agregarlo al encabezado de la solicitud
     if (token) {
-      // Clonar la petición y añadir la cabecera de autorización con el token
       request = request.clone({
         setHeaders: {
           Authorization: `Bearer ${token}`
@@ -25,6 +32,16 @@ export class AuthInterceptor implements HttpInterceptor {
       });
     }
     
-    return next.handle(request);
+    // Continuar con la solicitud y capturar errores
+    return next.handle(request).pipe(
+      catchError((error: HttpErrorResponse) => {
+        // Si recibimos un código 401 (No autorizado), limpiar el token y redirigir al login
+        if (error.status === 401) {
+          this.authService.logout();
+          this.router.navigate(['/login']);
+        }
+        return throwError(() => error);
+      })
+    );
   }
 }

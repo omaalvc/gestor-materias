@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { CanActivate, Router, ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
+import { Router, CanActivate, ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 
 @Injectable({
@@ -8,26 +8,30 @@ import { AuthService } from '../services/auth.service';
 export class AuthGuard implements CanActivate {
   
   constructor(
-    private authService: AuthService,
-    private router: Router
-  ) {}
-
-  canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean {
-    if (this.authService.isAuthenticated()) {
-      // Verificar roles si es necesario
-      const requiredRole = route.data['role'] as string;
-      const currentUser = this.authService.getCurrentUserValue();
-      
-      if (requiredRole && currentUser && requiredRole !== currentUser.role) {
-        // Redirigir a una página de acceso denegado o al dashboard
-        this.router.navigate(['/dashboard']);
-        return false;
+    private router: Router,
+    private authService: AuthService
+  ) { }
+  
+  canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot) {
+    const currentUser = this.authService.getCurrentUser();
+    
+    if (currentUser) {
+      // Verificar si la ruta requiere roles específicos
+      if (route.data['roles'] && route.data['roles'].length) {
+        // Verificar si el usuario tiene alguno de los roles requeridos
+        const userRole = this.authService.getUserRole();
+        if (route.data['roles'].indexOf(userRole) === -1) {
+          // Si no tiene el rol requerido, redirigir a la página de inicio
+          this.router.navigate(['/']);
+          return false;
+        }
       }
       
+      // Autorizado, retornar verdadero
       return true;
     }
-
-    // Redirigir al login si no está autenticado
+    
+    // No está autenticado, redirigir al login
     this.router.navigate(['/login'], { queryParams: { returnUrl: state.url } });
     return false;
   }

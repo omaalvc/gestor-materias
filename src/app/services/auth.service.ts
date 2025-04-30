@@ -1,20 +1,23 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, of, tap } from 'rxjs';
+import { BehaviorSubject, Observable, tap, of, throwError, map } from 'rxjs';
 import { environment } from '../../environments/environment';
+import { jwtDecode } from 'jwt-decode';
 
-interface LoginResponse {
-  success: boolean;
-  message: string;
-  token: string;
+export interface User {
+  id: number;
   username: string;
+  email: string;
+  fullName: string;
   role: string;
+  estudianteId?: number;
 }
 
-interface User {
-  username: string;
+export interface AuthResponse {
+  success?: boolean;
   token: string;
-  role: string;
+  message?: string;
+  user?: User;
 }
 
 @Injectable({
@@ -22,55 +25,107 @@ interface User {
 })
 export class AuthService {
   private apiUrl = environment.apiUrl;
-  private currentUserSubject = new BehaviorSubject<User | null>(null);
-  public currentUser = this.currentUserSubject.asObservable();
+  private currentUserSubject = new BehaviorSubject<User | null>(this.getUserFromStorage());
+  public currentUser$ = this.currentUserSubject.asObservable();
+  private tokenSubject = new BehaviorSubject<string | null>(localStorage.getItem('token'));
+  public token$ = this.tokenSubject.asObservable();
 
-  constructor(private http: HttpClient) {
-    // Intentar cargar el usuario desde localStorage al iniciar
-    const user = localStorage.getItem('currentUser');
-    if (user) {
-      this.currentUserSubject.next(JSON.parse(user));
-    }
-  }
+  constructor(private http: HttpClient) { }
 
-  login(credentials: { username: string, password: string }): Observable<LoginResponse> {
-    console.log('Intentando login con:', credentials.username);
-    return this.http.post<LoginResponse>(`${this.apiUrl}/api/auth/login`, credentials)
+  login(username: string, password: string): Observable<AuthResponse> {
+    return this.http.post<any>(`${this.apiUrl}/api/Auth/login`, { username, password })
       .pipe(
         tap(response => {
           console.log('Respuesta del servidor:', response);
-          if (response && response.success && response.token) {
-            // Almacenar el token y los datos del usuario
-            const user: User = {
-              username: response.username,
-              token: response.token,
-              role: response.role
-            };
-            localStorage.setItem('currentUser', JSON.stringify(user));
-            this.currentUserSubject.next(user);
+          
+          // Verificar si la respuesta tiene al menos un token
+          if (response && response.token) {
+            // Guardar el token en el almacenamiento local
+            localStorage.setItem('token', response.token);
+            
+            // Decodificar el token para obtener la información del usuario
+            try {
+              const decodedToken: any = jwtDecode(response.token);
+              
+              const user: User = {
+                id: parseInt(decodedToken.UserId),
+                username: decodedToken['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'],
+                email: decodedToken['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'],
+                fullName: decodedToken['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'], // Ajustar si hay un claim específico para el nombre completo
+                role: decodedToken['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'],
+                estudianteId: decodedToken.EstudianteId ? parseInt(decodedToken.EstudianteId) : undefined
+              };
+              
+              // Guardar el usuario en el almacenamiento local
+              localStorage.setItem('user', JSON.stringify(user));
+              
+              // Actualizar los BehaviorSubjects
+              this.tokenSubject.next(response.token);
+              this.currentUserSubject.next(user);
+            } catch (error) {
+              console.error('Error al decodificar el token:', error);
+              throw new Error('Error al procesar las credenciales del usuario');
+            }
+          } else {
+            console.error('Estructura de respuesta inválida:', response);
+            throw new Error('Respuesta del servidor inválida');
           }
         })
       );
   }
 
+  register(userData: any): Observable<AuthResponse> {
+    return this.http.post<AuthResponse>(`${this.apiUrl}/Account/register`, userData);
+  }
+
   logout(): void {
-    // Eliminar el usuario del almacenamiento local y actualizar el BehaviorSubject
-    localStorage.removeItem('currentUser');
+    // Eliminar token y usuario del almacenamiento local
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    
+    // Actualizar los BehaviorSubjects
+    this.tokenSubject.next(null);
     this.currentUserSubject.next(null);
   }
 
-  isAuthenticated(): boolean {
-    const currentUser = this.currentUserSubject.value;
-    // Verificar si hay un usuario con token
-    return !!(currentUser && currentUser.token);
-  }
-
   getToken(): string | null {
-    const currentUser = this.currentUserSubject.value;
-    return currentUser?.token ?? null;
+    return localStorage.getItem('token');
   }
 
-  getCurrentUserValue(): User | null {
+  isLoggedIn(): boolean {
+    return !!this.getToken();
+  }
+
+  getCurrentUser(): User | null {
     return this.currentUserSubject.value;
+  }
+
+  getUserRole(): string | null {
+    const user = this.getCurrentUser();
+    return user ? user.role : null;
+  }
+
+  isAdmin(): boolean {
+    const role = this.getUserRole();
+    return role === 'Administrador' || role === 'Admin';
+  }
+
+  private getUserFromStorage(): User | null {
+    const user = localStorage.getItem('user');
+    return user ? JSON.parse(user) : null;
+  }
+
+  // Método para validar el token actual
+  validateToken(): Observable<boolean> {
+    const token = this.getToken();
+    if (!token) {
+      return of(false);
+    }
+
+    // Asumiendo que tienes un endpoint para validar tokens
+    return this.http.get<{ valid: boolean }>(`${this.apiUrl}/Auth/validate`)
+      .pipe(
+        map(response => response.valid)
+      );
   }
 }
