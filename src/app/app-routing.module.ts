@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes, provideRouter } from '@angular/router';
 import { LoginComponent } from './components/login/login.component';
-import { AuthGuard } from './guards/auth.guard';
+//import { AuthGuard } from './guards/auth.guard';
 import { ListaMateriasComponent } from './components/materias/lista-materias/lista-materias.component';
 import { DetalleMateriaComponent } from './components/materias/detalle-materia/detalle-materia.component';
 import { ListaEstudiantesComponent } from './components/estudiantes/lista-estudiantes/lista-estudiantes.component';
@@ -14,47 +14,47 @@ export const routes: Routes = [
   { 
     path: 'admin/materias', 
     component: ListaMateriasComponent,
-    canActivate: [AuthGuard],
+    //canActivate: [AuthGuard],
     data: { roles: ['Administrador'] }
   },
   { 
     path: 'admin/materias/view/:id', 
     component: DetalleMateriaComponent,
-    canActivate: [AuthGuard],
+    //canActivate: [AuthGuard],
     data: { roles: ['Administrador'] }
   },
   {
     path: 'materias',
     component: ListaMateriasComponent,
-    canActivate: [AuthGuard]
+    //canActivate: [AuthGuard]
   },
   // Ruta para registro de materias (solo estudiantes)
   {
     path: 'registro-materias',
     component: RegistroMateriasComponent,
-    canActivate: [AuthGuard],
+    //canActivate: [AuthGuard],
     data: { roles: ['Estudiante'] }
   },
   // Rutas para estudiantes
   {
     path: 'estudiantes',
     component: ListaEstudiantesComponent,
-    canActivate: [AuthGuard]
+    //canActivate: [AuthGuard]
   },
   {
     path: 'estudiantes/:id',
     component: DetalleEstudianteComponent,
-    canActivate: [AuthGuard]
+    //canActivate: [AuthGuard]
   },
   {
     path: 'estudiantes/nuevo',
     component: FormularioEstudianteComponent,
-    canActivate: [AuthGuard]
+    //canActivate: [AuthGuard]
   },
   {
     path: 'estudiantes/editar/:id',
     component: FormularioEstudianteComponent,
-    canActivate: [AuthGuard]
+    //canActivate: [AuthGuard]
   },
   { path: '', redirectTo: '/login', pathMatch: 'full' },
   { path: '**', redirectTo: '/login' }

@@ -43,7 +43,7 @@ export class DashboardComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    this.authService.currentUser.subscribe(user => {
+    this.authService.currentUser$.subscribe(user => {
       if (user) {
         this.username = user.username;
         this.role = user.role;
@@ -72,7 +72,10 @@ export class DashboardComponent implements OnInit {
     // Cargar estudiantes
     this.estudianteService.getEstudiantes().subscribe({
       next: (data) => {
-        this.estudiantes = data.slice(0, 5); // Solo mostrar los primeros 5
+        this.estudiantes = data.slice(0, 5).map(estudiante => ({
+          ...estudiante,
+          id: estudiante.id ? parseInt(estudiante.id, 10) : undefined
+        })); // Solo mostrar los primeros 5
         this.totalEstudiantes = data.length;
       },
       error: (error) => {

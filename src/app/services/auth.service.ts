@@ -8,6 +8,11 @@ import { environment } from '../../environments/environment';
   providedIn: 'root'
 })
 export class AuthService {
+
+  isAuthenticated(): boolean {
+    return this.isLoggedIn();
+  }
+
   private apiUrl = `${environment.apiUrl}/api/auth`;
   private currentUserSubject: BehaviorSubject<any>;
   public currentUser$: Observable<any>;

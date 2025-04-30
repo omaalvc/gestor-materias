@@ -4,27 +4,20 @@ import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { ListaMateriasComponent } from './components/materias/lista-materias/lista-materias.component';
 
 import { DetalleMateriaComponent } from './components/materias/detalle-materia/detalle-materia.component';
-import { AuthGuard } from './guards/auth.guard';
 import { RegistroMateriasComponent } from './components/estudiantes/registro-materias/registro-materias.component';
+import { authGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: '', redirectTo: '/dashboard', pathMatch: 'full' },
-  {
-    path: '',
-    canActivate: [AuthGuard],
+  { 
+    path: 'admin',
     children: [
-      { path: 'dashboard', component: DashboardComponent },
-      {
-        path: 'materias',
-        children: [
-          { path: '', component: ListaMateriasComponent },
-          { path: 'crear', component: RegistroMateriasComponent },
-          { path: 'view/:id', component: DetalleMateriaComponent },
-          { path: 'edit/:id', component: RegistroMateriasComponent }
-        ]
-      }
+      { path: 'dashboard', component: DashboardComponent, canActivate: [authGuard] },
+      { path: 'materias', component: ListaMateriasComponent },
+      { path: 'materias/view/:id', component: DetalleMateriaComponent },
+      { path: 'materias/crear', component: RegistroMateriasComponent, canActivate: [authGuard] },
+      { path: 'materias/edit/:id', component: RegistroMateriasComponent, canActivate: [authGuard] }
     ]
-  },
-  { path: '**', redirectTo: '/dashboard' }
+  }
 ];

@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { catchError, tap } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 import { AuthService } from './auth.service';
 
@@ -51,13 +51,19 @@ export class MateriaService {
   }
 
   getMateria(id: number): Observable<Materia> {
-    return this.http.get<Materia>(`${this.apiUrl}/${id}`, { headers: this.getHeaders() })
-      .pipe(
-        catchError(error => {
-          console.error('Error obteniendo detalle de materia:', error);
-          return throwError(() => new Error('Error al obtener el detalle de la materia.'));
-        })
-      );
+    console.log('=== Inicio getMateria Service ===');
+    console.log('Solicitando materia con ID:', id);
+    const url = `${this.apiUrl}/${id}`;
+    console.log('URL de la petición:', url);
+
+    // Petición sin headers de autenticación
+    return this.http.get<Materia>(url).pipe(
+      tap(data => console.log('Datos recibidos:', data)),
+      catchError(error => {
+        console.error('Error en getMateria:', error);
+        return throwError(() => error);
+      })
+    );
   }
 
   createMateria(materia: Materia): Observable<Materia> {

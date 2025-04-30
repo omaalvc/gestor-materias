@@ -1,29 +1,35 @@
 import { inject } from '@angular/core';
-import { Router, CanActivateFn } from '@angular/router';
+import { Router, ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 
-export const AuthGuard: CanActivateFn = (route, state) => {
-  const router = inject(Router);
+export function authGuard(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean {
+  console.log('=== AuthGuard Iniciado ===');
+  console.log('URL solicitada:', state.url);
+  console.log('Ruta completa:', route.url);
+  console.log('Parámetros de ruta:', route.params);
+  
   const authService = inject(AuthService);
+  const router = inject(Router);
   
-  const currentUser = authService.getCurrentUser();
-  
-  if (authService.isLoggedIn()) {
-    // Verificar si la ruta tiene requisitos de roles
-    if (route.data['roles'] && route.data['roles'].length) {
-      // Verificar si el usuario tiene el rol requerido
-      if (!route.data['roles'].includes(currentUser.role)) {
-        // Si el rol no coincide, redirigir a la página principal del usuario
-        router.navigate(['/materias']);
-        return false;
-      }
-    }
-    
-    // Autenticado y con permisos
+  const isAuthenticated = authService.isAuthenticated();
+  console.log('¿Usuario autenticado?:', isAuthenticated);
+
+  // Verificar si es ruta de detalle de materia
+  const isDetalleMateria = state.url.startsWith('/materias/view/');
+  console.log('¿Es ruta de detalle de materia?:', isDetalleMateria);
+
+  if (isDetalleMateria) {
+    console.log('Permitiendo acceso a detalle de materia sin autenticación');
     return true;
   }
-  
-  // No autenticado, redirigir al login
-  router.navigate(['/login'], { queryParams: { returnUrl: state.url } });
-  return false;
-};
+
+  if (!isAuthenticated) {
+    console.log('Usuario no autenticado, redirigiendo a login');
+    router.navigate(['/login']);
+    return false;
+  }
+
+  console.log('Acceso permitido');
+  console.log('=== AuthGuard Finalizado ===');
+  return true;
+}

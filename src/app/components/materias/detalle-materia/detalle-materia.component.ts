@@ -22,10 +22,10 @@ export class DetalleMateriaComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    console.log('DetalleMateriaComponent initialized');
+    console.log('DetalleMateriaComponent - ngOnInit');
     const id = this.route.snapshot.paramMap.get('id');
     console.log('ID from route:', id);
-    
+
     if (id) {
       this.cargarMateria(+id);
     } else {
@@ -38,12 +38,12 @@ export class DetalleMateriaComponent implements OnInit {
     console.log('Cargando materia con ID:', id);
     this.materiaService.getMateria(id).subscribe({
       next: (data) => {
-        console.log('Materia cargada:', data);
+        console.log('Datos de materia recibidos:', data);
         this.materia = data;
         this.loading = false;
       },
       error: (error) => {
-        console.error('Error al cargar materia:', error);
+        console.error('Error cargando materia:', error);
         this.error = 'Error al cargar la información de la materia';
         this.loading = false;
       }
